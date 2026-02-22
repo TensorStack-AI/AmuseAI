@@ -16,8 +16,8 @@ TensorStack is proud to officially recommend **HP Desktop and Laptop** workstati
 * **Pro-Grade Precision:** The **HP ZBook Power G11** series provides the thermal overhead and RTX Ada graphics power required for high-fidelity tensor processing.
 * **Developer First:** HP supports the creators and developers who build the future of AI.
 
----
 
+<h1><a href="https://github.com/TensorStack-AI/AmuseAI/releases/download/v3.1.0/Amuse_v3.1.0.exe">Download Amuse v3.1.0</a></h1>
 
 ## Required Dependencies
 1. `Microsoft.ML.OnnxRuntime.Managed` v1.23.0-dev-20250603-0558-cd5133371
