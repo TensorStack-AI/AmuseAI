@@ -23,6 +23,7 @@ namespace Amuse.UI.Services
         private readonly OrtEnvironment _environment;
         private readonly List<Device> _devices = [];
         private readonly int _amdVendorId = 4098;
+        private readonly int[] _invalidVendorIds = [4136];
 
         private Device _baseDevice;
         private bool _isRyzenAI;
@@ -117,6 +118,7 @@ namespace Amuse.UI.Services
         {
             //LogOrtDevices();
             _logger.LogInformation($"[DetectDevices] - Detecting devices...");
+            IsInvalidVendor();
             DetectCPU();
             DetectNPU();
             DetectGPU();
@@ -506,6 +508,29 @@ namespace Amuse.UI.Services
 
                 throw;
             }
+        }
+
+
+        public bool IsInvalidVendor()
+        {
+            try
+            {
+                foreach (var invalidVendorId in _invalidVendorIds)
+                {
+                    var hexCode = invalidVendorId.ToString("X");
+                    var query = new SelectQuery($"SELECT DeviceID FROM Win32_PnPEntity WHERE DeviceID LIKE 'PCI\\\\VEN_{hexCode}%'");
+                    using (var searcher = new ManagementObjectSearcher(query))
+                    {
+                        using (var results = searcher.Get())
+                        {
+                            if (results.Count > 0)
+                                throw new Exception("Amuse is not compatible with this system.");
+                        }
+                    }
+                }
+            }
+            catch { }
+            return false;
         }
     }
 
