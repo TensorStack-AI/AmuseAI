@@ -14373,6 +14373,90 @@
           "https://huggingface.co/TensorStack/StableDiffusion-Instruct-amuse/resolve/main/Sample4.png"
         ],
         "Tags": []
+      },
+
+
+      {
+        "Id": "560a8b80-cdd2-4779-9a01-7d5d33e87651",
+        "FileVersion": "2",
+        "Created": "2026-02-27T00:00:00",
+        "IsProtected": true,
+        "Name": "StableDiffusion XL",
+        "ImageIcon": "https://huggingface.co/TensorStack/sdxl-turbo-ryzen-ai/resolve/main/Icon.png",
+        "Author": "Stability AI",
+        "Description": "The SDXL model is a text-to-image generative AI model that can create high-resolution images with a size of 1024x1024 pixels. It takes text descriptions as input and generates corresponding images as output. The model aims to create beautiful and realistic images based on the provided textual prompts.",
+        "Rank": 22,
+        "Group": "Online",
+        "Template": "SDXL",
+        "Category": "StableDiffusion",
+        "StableDiffusionTemplate": {
+          "PipelineType": "StableDiffusionXL",
+          "ModelType": "Base",
+          "SampleSize": 1024,
+          "TokenizerLength": 768,
+          "Tokenizer2Limit": 77,
+          "Optimization": "Level1",
+          "DiffuserTypes": [
+            "TextToImage",
+            "ImageToImage",
+            "ImageInpaintLegacy"
+          ],
+          "SchedulerDefaults": {
+            "SchedulerType": "DDPM",
+            "Steps": 30,
+            "StepsMin": 4,
+            "StepsMax": 100,
+            "Guidance": 5,
+            "GuidanceMin": 1,
+            "GuidanceMax": 30,
+            "TimestepSpacing": "Trailing",
+            "BetaSchedule": "ScaledLinear",
+            "BetaStart": 0.00085,
+            "BetaEnd": 0.01
+          }
+        },
+        "MemoryMin": 5.2,
+        "MemoryMax": 10,
+        "DownloadSize": 11.2,
+        "Website": "https://stability.ai",
+        "Licence": "https://github.com/Stability-AI/generative-models/blob/main/model_licenses/LICENSE-SDXL-Turbo",
+        "LicenceType": "NonCommercial",
+        "IsLicenceAccepted": false,
+        "Repository": "https://huggingface.co/amd/sdxl-base-amdnpu",
+        "RepositoryFiles": [
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/tokenizer/merges.txt",
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/tokenizer/special_tokens_map.json",
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/tokenizer/vocab.json",
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/tokenizer_2/merges.txt",
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/tokenizer_2/special_tokens_map.json",
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/tokenizer_2/vocab.json",
+
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/unet/dd/dd_metastate_SD15_Unet_NhwcConv_0-unetconv_inConv.ctrlpkt",
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/unet/dd/dd_metastate_SD15_Unet_NhwcConv_0-unetconv_inConv.fconst",
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/unet/dd/dd_metastate_SD15_Unet_NhwcConv_0-unetconv_inConv.state",
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/unet/dd/dd_metastate_SD15_Unet_NhwcConv_0-unetconv_inConv.super",
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/unet/dd/metastate_SD15_Unet_NhwcConv_0-unetconv_inConv.super",
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/unet/dd/replaced.onnx",
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/unet/dd/.cache/NhwcConv_0-unetconv_inConv_meta.json",
+
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/vae_decoder/dd/dd_metastate_Sd15_Decoder_NhwcConv_0-post_quant_convConv.ctrlpkt",
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/vae_decoder/dd/dd_metastate_Sd15_Decoder_NhwcConv_0-post_quant_convConv.fconst",
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/vae_decoder/dd/dd_metastate_Sd15_Decoder_NhwcConv_0-post_quant_convConv.state",
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/vae_decoder/dd/dd_metastate_Sd15_Decoder_NhwcConv_0-post_quant_convConv.super",
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/vae_decoder/dd/replaced.onnx",
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/vae_decoder/dd/.cache/NhwcConv_0-post_quant_convConv_meta.json",
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/vae_encoder/config.json",
+
+          "https://huggingface.co/amd/sdxl-base-amdnpu/resolve/main/README.md"
+        ],
+        "PreviewImages": [
+          "",
+          "",
+          "",
+          ""
+        ],
+        "Tags": [
+        ]
       }
     ],
     "UpscaleModelSets": [],
