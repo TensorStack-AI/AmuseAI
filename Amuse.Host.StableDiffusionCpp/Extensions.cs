@@ -1,520 +1,281 @@
 ﻿using Amuse.Common;
-using Amuse.Host.StableDiffusionCpp.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.NetworkInformation;
 using TensorStack.Common;
 using TensorStack.Common.Tensor;
-using TensorStack.Media.Image;
+using Pipeline = TensorStack.StableDiffusionCpp;
+using PipelineCommon = TensorStack.StableDiffusionCpp.Common;
 
 namespace Amuse.Host.StableDiffusionCpp
 {
-    public static class Extensions
+    internal static class Extensions
     {
-        public static Config.ServerConfig ToServerConfig(this PipelineLoadOptions loadOptions, PipelineCreateOptions createOptions)
+        /// <summary>
+        /// Creates the context options.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="pipelineOptions">The pipeline options.</param>
+        /// <returns>PipelineCommon.ContextOptions.</returns>
+        /// <exception cref="System.NotImplementedException">Pipeline not supported</exception>
+        internal static PipelineCommon.ContextOptions CreateContextOptions(this PipelineCreateOptions options, PipelineLoadOptions pipelineOptions)
         {
-            if (!GetBackend(createOptions, out var backendType))
-                throw new Exception($"{loadOptions.DeviceVendor} Backend Not Found.");
-
-            var deviceId = backendType == Common.BackendType.Vulkan
-                ? loadOptions.DeviceId
-                : loadOptions.DeviceVendorIndex;
-            var modelConfig = GetModelConfig(loadOptions);
-            var config = new Config.ServerConfig
+            var backendType = GetBackendType(options);
+            var backendDevice = GetBackend(pipelineOptions, backendType);
+            var paramsBackend = GetParamsBackend(pipelineOptions, backendType);
+            var contextOptions = new PipelineCommon.ContextOptions
             {
-                IsDebug = createOptions.IsDebug,
-                Address = createOptions.ServerAddress,
-                Port = GetOpenPort(createOptions.ServerPort),
-                Directory = Path.Combine(createOptions.Directory, createOptions.Environment),
-                DeviceId = deviceId,
-                Backend = backendType,
-                MemoryMode = loadOptions.MemoryMode,
-                ModelConfig = modelConfig,
-                QuantizationType = loadOptions.QuantType,
-                IsFlashAttentionEnabled = loadOptions.IsFlashAttentionEnabled,
+                Backend = backendDevice,
+                ParamsBackend = paramsBackend,
+                RngType = Pipeline.RngType.CPU,
+                SamplerRngType = Pipeline.RngType.CPU,
+
+                // Memory
+                MaxVram = pipelineOptions.MemoryMode == MemoryModeType.Device ? "0" : "-1",
+                DataType = Pipeline.DataType.Default, //TODO: Quantization type
+                AutoFit = pipelineOptions.MemoryMode == MemoryModeType.Balanced,
+                StreamLayers = pipelineOptions.MemoryMode == MemoryModeType.OffloadCPU,
+
+                // Vulkan
+                VaeConvDirect = backendType == Pipeline.BackendType.Vulkan,
+                DiffusionConvDirect = backendType == Pipeline.BackendType.Vulkan,
+                PreviewType = Pipeline.PreviewType.Projection,
+
+                // Misc
+                ForceSdxlVaeConvScale = true,
+                FlashAttn = pipelineOptions.IsFlashAttentionEnabled,
+                LoraApplyMode = Pipeline.LoraApplyType.AtRuntime,
             };
 
-            return config;
+
+            if (pipelineOptions.Pipeline == "StableDiffusionXLPipeline")
+            {
+                return contextOptions with
+                {
+                    ModelPath = pipelineOptions.CheckpointConfig.FullCheckpoint,
+                    VaePath = pipelineOptions.CheckpointConfig.Vae,
+                    ClipLPath = pipelineOptions.CheckpointConfig.TextEncoder,
+                    ClipGPath = pipelineOptions.CheckpointConfig.TextEncoder2,
+                    DiffusionModelPath = pipelineOptions.CheckpointConfig.Unet,
+                    ControlNetPath = pipelineOptions.ControlNet?.Path
+                };
+            }
+            if (pipelineOptions.Pipeline == "StableDiffusion3Pipeline")
+            {
+                return contextOptions with
+                {
+                    VaePath = pipelineOptions.CheckpointConfig.Vae,
+                    ClipLPath = pipelineOptions.CheckpointConfig.TextEncoder,
+                    ClipGPath = pipelineOptions.CheckpointConfig.TextEncoder2,
+                    T5xxlPath = pipelineOptions.CheckpointConfig.TextEncoder3,
+                    DiffusionModelPath = pipelineOptions.CheckpointConfig.Transformer,
+                    ControlNetPath = pipelineOptions.ControlNet?.Path
+                };
+            }
+            if (pipelineOptions.Pipeline == "FluxPipeline")
+            {
+                return contextOptions with
+                {
+                    VaePath = pipelineOptions.CheckpointConfig.Vae,
+                    ClipLPath = pipelineOptions.CheckpointConfig.TextEncoder,
+                    T5xxlPath = pipelineOptions.CheckpointConfig.TextEncoder2,
+                    DiffusionModelPath = pipelineOptions.CheckpointConfig.Transformer,
+                    ControlNetPath = pipelineOptions.ControlNet?.Path
+                };
+            }
+            if (pipelineOptions.Pipeline == "ChromaPipeline")
+            {
+                return contextOptions with
+                {
+                    VaePath = pipelineOptions.CheckpointConfig.Vae,
+                    T5xxlPath = pipelineOptions.CheckpointConfig.TextEncoder,
+                    DiffusionModelPath = pipelineOptions.CheckpointConfig.Transformer,
+                    ControlNetPath = pipelineOptions.ControlNet?.Path
+                };
+            }
+            if (pipelineOptions.Pipeline == "IdeogramPipeline")
+            {
+                return contextOptions with
+                {
+                    VaePath = pipelineOptions.CheckpointConfig.Vae,
+                    LlmPath = pipelineOptions.CheckpointConfig.TextEncoder,
+                    DiffusionModelPath = pipelineOptions.CheckpointConfig.Transformer,
+                    UncondDiffusionModelPath = pipelineOptions.CheckpointConfig.Transformer2,
+                    ControlNetPath = pipelineOptions.ControlNet?.Path
+                };
+            }
+            if (pipelineOptions.Pipeline == "LTX20Pipeline")
+            {
+                return contextOptions with
+                {
+                    VaePath = pipelineOptions.CheckpointConfig.Vae,
+                    AudioVaePath = pipelineOptions.CheckpointConfig.AudioVae,
+                    LlmPath = pipelineOptions.CheckpointConfig.TextEncoder,
+                    EmbeddingsConnectorsPath = pipelineOptions.CheckpointConfig.Connectors,
+                    DiffusionModelPath = pipelineOptions.CheckpointConfig.Transformer,
+                };
+            }
+            if (pipelineOptions.Pipeline == "WanPipeline")
+            {
+                return contextOptions with
+                {
+                    VaePath = pipelineOptions.CheckpointConfig.Vae,
+                    T5xxlPath = pipelineOptions.CheckpointConfig.TextEncoder,
+                    ClipVisionPath = pipelineOptions.CheckpointConfig.TextEncoder2,
+                    DiffusionModelPath = pipelineOptions.CheckpointConfig.Transformer,
+                    HighNoiseDiffusionModelPath = pipelineOptions.CheckpointConfig.Transformer2
+                };
+            }
+            if (pipelineOptions.Pipeline == "MiniMaxVideoPipeline")
+            {
+                return contextOptions with
+                {
+                    VaePath = pipelineOptions.CheckpointConfig.Vae,
+                    AudioVaePath = pipelineOptions.CheckpointConfig.AudioVae,
+                    LlmPath = pipelineOptions.CheckpointConfig.TextEncoder,
+                    DiffusionModelPath = pipelineOptions.CheckpointConfig.Transformer
+                };
+            }
+            if (pipelineOptions.Pipeline == "QwenImagePipeline")
+            {
+                return contextOptions with
+                {
+                    VaePath = pipelineOptions.CheckpointConfig.Vae,
+                    LlmPath = pipelineOptions.CheckpointConfig.TextEncoder,
+                    DiffusionModelPath = pipelineOptions.CheckpointConfig.Transformer,
+                    ControlNetPath = pipelineOptions.ControlNet?.Path,
+                    ModelArgs = "qwen_image_zero_cond_t=true" // TODO: should be optional
+                };
+            }
+            if (pipelineOptions.Pipeline == "AnimaPipeline"
+             || pipelineOptions.Pipeline == "ErniePipeline"
+             || pipelineOptions.Pipeline == "Flux2KleinPipeline"
+             || pipelineOptions.Pipeline == "Krea2Pipeline"
+             || pipelineOptions.Pipeline == "ZImagePipeline")
+            {
+                return contextOptions with
+                {
+                    VaePath = pipelineOptions.CheckpointConfig.Vae,
+                    LlmPath = pipelineOptions.CheckpointConfig.TextEncoder,
+                    DiffusionModelPath = pipelineOptions.CheckpointConfig.Transformer,
+                    ControlNetPath = pipelineOptions.ControlNet?.Path
+                };
+            }
+
+            // Pipeline not supported
+            throw new NotImplementedException(pipelineOptions.Pipeline);
         }
 
 
-        public static ImageParams ToServerParams(this GenerateImageOptions options, Config.ModelConfig modelConfig, PipelineLoadOptions loadOptions, ImageParams defaultOptions)
+        /// <summary>
+        /// Creates the GenerateImageOptions.
+        /// </summary>
+        /// <param name="defaultOptions">The default options.</param>
+        /// <param name="generateOptions">The generate options.</param>
+        /// <param name="pipelineOptions">The pipeline options.</param>
+        /// <returns>PipelineCommon.GenerateImageOptions.</returns>
+        internal static PipelineCommon.GenerateImageOptions CreateImageOptions(this PipelineCommon.GenerateImageOptions defaultOptions, GenerateImageOptions generateOptions, PipelineLoadOptions pipelineOptions)
         {
+            var hiresDefaults = defaultOptions.Hires;
+            var samplerDefaults = defaultOptions.SampleParameters;
             return defaultOptions with
             {
-                Seed = options.Seed,
-                Prompt = options.Prompt,
-                NegativePrompt = options.NegativePrompt ?? "",
-                Width = options.Width,
-                Height = options.Height,
-                Strength = options.Strength,
-                ControlStrength = options.ControlNetScale,
-                Lora = loadOptions.LoraAdapters.GetLoraOptions(modelConfig.LoraModelDirectory, options.LoraOptions),
-                InitImage = GetInitImage(options, loadOptions.ProcessType),
-                RefImages = GetReferenceImages(options, loadOptions.ProcessType),
-                ControlImage = GetControlNetImage(options, loadOptions.ProcessType),
-                MaskImage = GetMaskImage(options, loadOptions.ProcessType),
-                HiresParams = GetHiresParams(loadOptions, options),
-                SampleParams = new SampleParams
+                Seed = generateOptions.Seed,
+                Prompt = generateOptions.Prompt,
+                NegativePrompt = generateOptions.NegativePrompt.DefaultIfWhiteSpace(),
+                Width = generateOptions.Width,
+                Height = generateOptions.Height,
+                Strength = generateOptions.Strength,
+                ControlStrength = generateOptions.ControlNetScale,
+                Loras = GetLoraOptions(pipelineOptions.LoraAdapters, generateOptions.LoraOptions),
+                InitImage = GetInitImage(generateOptions, pipelineOptions.ProcessType),
+                RefImages = GetReferenceImages(generateOptions, pipelineOptions.ProcessType),
+                ControlImage = GetControlNetImage(generateOptions, pipelineOptions.ProcessType),
+                MaskImage = GetMaskImage(generateOptions, pipelineOptions.ProcessType),
+                Hires = hiresDefaults.GetHiresOptions(generateOptions, pipelineOptions),
+                SampleParameters = samplerDefaults with
                 {
-                    SampleSteps = options.Steps,
-                    SampleMethod = GetSampler(options.SchedulerOptions),
-                    Scheduler = GetSigmaSchedule(options.SchedulerOptions),
-                    Eta = options.SchedulerOptions.Eta > 0 ? options.SchedulerOptions.Eta : null,
-                    FlowShift = options.SchedulerOptions.FlowShift > 0 ? options.SchedulerOptions.FlowShift : null,
-                    Guidance = new GuidanceParams
-                    {
-                        TxtCfg = Math.Max(1, options.GuidanceScale),
-                        DistilledGuidance = Math.Max(1, options.GuidanceScale2)
-                    }
+                    SampleSteps = generateOptions.Steps,
+                    TxtCfg = GetTextGuidance(generateOptions.GuidanceScale, generateOptions.GuidanceScale2, pipelineOptions.Pipeline),
+                    DistilledGuidance = GetDistilledGuidance(generateOptions.GuidanceScale, generateOptions.GuidanceScale2, pipelineOptions.Pipeline),
+                    Eta = generateOptions.SchedulerOptions.Eta > 0 ? generateOptions.SchedulerOptions.Eta : samplerDefaults.Eta,
+                    FlowShift = generateOptions.SchedulerOptions.FlowShift > 0 ? generateOptions.SchedulerOptions.FlowShift : samplerDefaults.FlowShift,
+                    SampleMethod = GetSamplerType(generateOptions.SchedulerOptions),
+                    Scheduler = GetSchedulerType(generateOptions.SchedulerOptions)
                 },
-                VaeTilingParams = new VaeTilingParams
+                VaeTilingParameters = defaultOptions.VaeTilingParameters with
                 {
-                    Enabled = options.EnableVaeTiling
+                    Enabled = generateOptions.EnableVaeTiling
                 }
-            };
-        }
-
-
-        public static VideoParams ToServerParams(this GenerateVideoOptions options, Config.ModelConfig modelConfig, PipelineLoadOptions loadOptions, VideoParams defaultOptions)
-        {
-            return defaultOptions with
-            {
-                Seed = options.Seed,
-                Prompt = options.Prompt,
-                NegativePrompt = options.NegativePrompt ?? "",
-                Width = options.Width,
-                Height = options.Height,
-                Strength = options.Strength,
-                Frames = options.Frames,
-                FrameRate = (int)options.FrameRate,
-                Lora = loadOptions.LoraAdapters.GetLoraOptions(modelConfig.LoraModelDirectory, options.LoraOptions),
-                ImageFirst = GetFirstFrame(options, loadOptions.ProcessType),
-                ImageLast = GetLastFrame(options, loadOptions.ProcessType),
-                ControlFrames = GetControlFrames(options, loadOptions.ProcessType),
-                VaceStrength = options.ControlNetScale,
-                HiresParams = GetHiresParams(loadOptions, options),
-                SampleParams = new SampleParams
-                {
-                    SampleSteps = options.Steps,
-                    SampleMethod = GetSampler(options.SchedulerOptions),
-                    Scheduler = GetSigmaSchedule(options.SchedulerOptions),
-                    Eta = options.SchedulerOptions.Eta > 0 ? options.SchedulerOptions.Eta : null,
-                    FlowShift = options.SchedulerOptions.FlowShift > 0 ? options.SchedulerOptions.FlowShift : null,
-                    Guidance = options.GetGuidanceScale(loadOptions.Pipeline)
-                },
-                SampleParamsHighNoise = new SampleParams
-                {
-                    SampleSteps = options.Steps2,
-                    SampleMethod = GetSampler(options.SchedulerOptions),
-                    Scheduler = GetSigmaSchedule(options.SchedulerOptions),
-                    Eta = options.SchedulerOptions.Eta > 0 ? options.SchedulerOptions.Eta : null,
-                    FlowShift = options.SchedulerOptions.FlowShift > 0 ? options.SchedulerOptions.FlowShift : null,
-                    Guidance = options.GetGuidanceScaleighNoise(loadOptions.Pipeline)
-                },
-                VaeTilingParams = new VaeTilingParams
-                {
-                    Enabled = options.EnableVaeTiling,
-                    TemporalTiling = options.EnableVaeSlicing
-                }
-            };
-        }
-
-
-        private static GuidanceParams GetGuidanceScale(this GenerateVideoOptions options, string pipelineType)
-        {
-            if (pipelineType == "WanPipeline")
-            {
-                return new GuidanceParams
-                {
-                    TxtCfg = Math.Max(1, options.GuidanceScale2),
-                    DistilledGuidance = Math.Max(1, options.GuidanceScale2)
-                };
-            }
-            return new GuidanceParams
-            {
-                TxtCfg = Math.Max(1, options.GuidanceScale),
-                DistilledGuidance = Math.Max(1, options.GuidanceScale2)
-            };
-        }
-
-
-        private static GuidanceParams GetGuidanceScaleighNoise(this GenerateVideoOptions options, string pipelineType)
-        {
-            if (pipelineType == "WanPipeline")
-            {
-                return new GuidanceParams
-                {
-                    TxtCfg = Math.Max(1, options.GuidanceScale),
-                    DistilledGuidance = Math.Max(1, options.GuidanceScale)
-                };
-            }
-            return new GuidanceParams
-            {
-                TxtCfg = Math.Max(1, options.GuidanceScale2),
-                DistilledGuidance = Math.Max(1, options.GuidanceScale)
-            };
-        }
-
-
-        private static List<LoraParams> GetLoraOptions(this List<LoraConfig> loraAdapters, string loraModelDirectory, List<LoraOptions> loraAdapterOptions)
-        {
-            if (loraAdapterOptions.IsNullOrEmpty())
-                return [];
-
-            var loraParams = new List<LoraParams>();
-            foreach (var config in loraAdapters.Where(x => x.Path == loraModelDirectory))
-            {
-                var options = loraAdapterOptions.FirstOrDefault(x => x.Name == config.Name);
-                if (options == null)
-                    continue;
-
-                loraParams.Add(new LoraParams
-                {
-                    Multiplier = options.Strength,
-                    Path = config.Weights,
-                });
-            }
-            return loraParams;
-        }
-
-
-        private static Config.ModelConfig GetModelConfig(PipelineLoadOptions options)
-        {
-            if (options.Pipeline == "StableDiffusionXLPipeline")
-            {
-                return new Config.ModelConfig
-                {
-                    Full = options.CheckpointConfig.FullCheckpoint,
-                    Vae = options.CheckpointConfig.Vae,
-                    ClipL = options.CheckpointConfig.TextEncoder,
-                    ClipG = options.CheckpointConfig.TextEncoder2,
-                    Diffusion = options.CheckpointConfig.Unet,
-                    LoraModelDirectory = options.LoraAdapterPath,
-                    ControlNet = options.ControlNet?.Path
-                };
-            }
-            if (options.Pipeline == "StableDiffusion3Pipeline")
-            {
-                return new Config.ModelConfig
-                {
-                    Vae = options.CheckpointConfig.Vae,
-                    ClipL = options.CheckpointConfig.TextEncoder,
-                    ClipG = options.CheckpointConfig.TextEncoder2,
-                    T5XXL = options.CheckpointConfig.TextEncoder3,
-                    Diffusion = options.CheckpointConfig.Transformer,
-                    LoraModelDirectory = options.LoraAdapterPath,
-                    ControlNet = options.ControlNet?.Path
-                };
-            }
-            if (options.Pipeline == "FluxPipeline")
-            {
-                return new Config.ModelConfig
-                {
-                    Vae = options.CheckpointConfig.Vae,
-                    ClipL = options.CheckpointConfig.TextEncoder,
-                    T5XXL = options.CheckpointConfig.TextEncoder2,
-                    Diffusion = options.CheckpointConfig.Transformer,
-                    LoraModelDirectory = options.LoraAdapterPath,
-                    ControlNet = options.ControlNet?.Path
-                };
-            }
-            if (options.Pipeline == "IdeogramPipeline")
-            {
-                return new Config.ModelConfig
-                {
-                    Vae = options.CheckpointConfig.Vae,
-                    LLM = options.CheckpointConfig.TextEncoder,
-                    Diffusion = options.CheckpointConfig.Transformer,
-                    DiffusionUncond = options.CheckpointConfig.Transformer2,
-                    LoraModelDirectory = options.LoraAdapterPath,
-                    ControlNet = options.ControlNet?.Path
-                };
-            }
-            if (options.Pipeline == "LTX20Pipeline")
-            {
-                return new Config.ModelConfig
-                {
-                    Vae = options.CheckpointConfig.Vae,
-                    VaeAudio = options.CheckpointConfig.AudioVae,
-                    LLM = options.CheckpointConfig.TextEncoder,
-                    Connectors = options.CheckpointConfig.Connectors,
-                    Diffusion = options.CheckpointConfig.Transformer,
-                    LoraModelDirectory = options.LoraAdapterPath,
-                    UpscaleModelDirectory = GetHiresModelPath(options)
-                };
-            }
-            if (options.Pipeline == "WanPipeline")
-            {
-                return new Config.ModelConfig
-                {
-                    Vae = options.CheckpointConfig.Vae,
-                    T5XXL = options.CheckpointConfig.TextEncoder,
-                    ClipVison = options.CheckpointConfig.TextEncoder2,
-                    Diffusion = options.CheckpointConfig.Transformer,
-                    DiffusionHighNoise = options.CheckpointConfig.Transformer2,
-                    LoraModelDirectory = options.LoraAdapterPath
-                };
-            }
-            if (options.Pipeline == "MiniMaxVideoPipeline")
-            {
-                return new Config.ModelConfig
-                {
-                    Vae = options.CheckpointConfig.Vae,
-                    VaeAudio = options.CheckpointConfig.AudioVae,
-                    LLM = options.CheckpointConfig.TextEncoder,
-                    Diffusion = options.CheckpointConfig.Transformer,
-                    LoraModelDirectory = options.LoraAdapterPath
-                };
-            }
-            if (options.Pipeline == "QwenImagePipeline")
-            {
-                return new Config.ModelConfig
-                {
-                    Vae = options.CheckpointConfig.Vae,
-                    LLM = options.CheckpointConfig.TextEncoder,
-                    Diffusion = options.CheckpointConfig.Transformer,
-                    LoraModelDirectory = options.LoraAdapterPath,
-                    ControlNet = options.ControlNet?.Path,
-                    ExtraModelArgs = "qwen_image_zero_cond_t=true" // TODO: should be optional
-                };
-            }
-            if (options.Pipeline == "AnimaPipeline"
-             || options.Pipeline == "ErniePipeline"
-             || options.Pipeline == "Flux2KleinPipeline"
-             || options.Pipeline == "Krea2Pipeline"
-             || options.Pipeline == "ZImagePipeline")
-            {
-                return new Config.ModelConfig
-                {
-                    Vae = options.CheckpointConfig.Vae,
-                    LLM = options.CheckpointConfig.TextEncoder,
-                    Diffusion = options.CheckpointConfig.Transformer,
-                    LoraModelDirectory = options.LoraAdapterPath,
-                    ControlNet = options.ControlNet?.Path
-                };
-            }
-            throw new NotImplementedException(options.Pipeline);
-        }
-
-
-        private static string GetSampler(SchedulerOptions options)
-        {
-            return options.Scheduler switch
-            {
-                SchedulerType.Euler => "euler",
-                SchedulerType.EulerAncestral => "euler_a",
-                SchedulerType.Heun => "heun",
-                SchedulerType.DPM2 => "dpm2",
-                SchedulerType.DPMPlusPlus2SAncestral => "dpm++2s_a",
-                SchedulerType.DPMPlusPlus2M => "dpm++2m",
-                SchedulerType.DPMPlusPlus2Mv2 => "dpm++2mv2",
-                SchedulerType.IPNDM => "ipndm",
-                SchedulerType.LCM => "lcm",
-                SchedulerType.DDIM => "ddim_trailing",
-                SchedulerType.TCD => "tcd",
-                SchedulerType.ResidualMultistep => "res_multistep",
-                SchedulerType.Residual2S => "res_2s",
-                SchedulerType.ERSDE => "er_sde",
-                SchedulerType.DPMPlusPlus2MSDE => "dpm++2m_sde",
-                SchedulerType.DPMPlusPlus2MSDEBT => "dpm++2m_sde_bt",
-                SchedulerType.LMS => "lms",
-                _ => "default"
-            };
-        }
-
-
-        private static string GetSigmaSchedule(SchedulerOptions options)
-        {
-            return options.SigmaScheduleType switch
-            {
-                SigmaScheduleType.Discrete => "discrete",
-                SigmaScheduleType.Normal => "normal",
-                SigmaScheduleType.Karras => "karras",
-                SigmaScheduleType.Exponential => "exponential",
-                SigmaScheduleType.AYS => "ays",
-                SigmaScheduleType.GITS => "gits",
-                SigmaScheduleType.SGMUniform => "sgm_uniform",
-                SigmaScheduleType.Simple => "simple",
-                SigmaScheduleType.Smoothstep => "smoothstep",
-                SigmaScheduleType.KLOptimal => "kl_optimal",
-                SigmaScheduleType.LCM => "lcm",
-                SigmaScheduleType.BongTangent => "bong_tangent",
-                SigmaScheduleType.LTX2 => "ltx2",
-                SigmaScheduleType.LogitNormal => "logit_normal",
-                SigmaScheduleType.Flux => "flux",
-                SigmaScheduleType.Flux2 => "flux2",
-                SigmaScheduleType.Beta => "beta",
-                _ => "default"
             };
         }
 
 
         /// <summary>
-        /// Gets the open server port.
+        /// Creates the GenerateVideoOptions.
         /// </summary>
-        /// <param name="defaultPort">The default port.</param>
-        /// <returns>System.Int32.</returns>
-        /// <exception cref="System.Exception">Unable to locate open port</exception>
-        private static short GetOpenPort(int defaultPort)
+        /// <param name="defaultOptions">The default options.</param>
+        /// <param name="generateOptions">The generate options.</param>
+        /// <param name="pipelineOptions">The pipeline options.</param>
+        /// <returns>PipelineCommon.GenerateVideoOptions.</returns>
+        internal static PipelineCommon.GenerateVideoOptions CreateVideoOptions(this PipelineCommon.GenerateVideoOptions defaultOptions, GenerateVideoOptions generateOptions, PipelineLoadOptions pipelineOptions)
         {
-            int PortStart = 2000;
-            int PortEnd = 8000;
-            var properties = IPGlobalProperties.GetIPGlobalProperties();
-            var tcpEndpoints = properties.GetActiveTcpListeners();
-            var usedPorts = tcpEndpoints
-                .Select(endpoint => endpoint.Port)
-                .Where(port => port >= PortStart && port <= PortEnd)
-                .OrderBy(port => port)
-                .Distinct();
-
-            if (!usedPorts.Contains(defaultPort))
-                return (short)defaultPort;
-
-            int openPort = PortStart;
-            foreach (int usedPort in usedPorts)
+            var hiresDefaults = defaultOptions.Hires;
+            var samplerDefaults = defaultOptions.SampleParameters;
+            var samplerHighNoiseDefaults = defaultOptions.HighNoiseSampleParameters;
+            return defaultOptions with
             {
-                if (usedPort != openPort)
-                    break;
-                openPort++;
-            }
+                Seed = generateOptions.Seed,
+                Prompt = generateOptions.Prompt,
+                NegativePrompt = generateOptions.NegativePrompt.DefaultIfWhiteSpace(),
+                Width = generateOptions.Width,
+                Height = generateOptions.Height,
+                Strength = generateOptions.Strength,
+                VideoFrames = generateOptions.Frames,
+                Fps = (int)generateOptions.FrameRate,
+                Loras = GetLoraOptions(pipelineOptions.LoraAdapters, generateOptions.LoraOptions),
+                InitImage = GetFirstFrame(generateOptions, pipelineOptions.ProcessType),
+                EndImage = GetLastFrame(generateOptions, pipelineOptions.ProcessType),
+                ControlFrames = GetControlFrames(generateOptions, pipelineOptions.ProcessType),
+                VaceStrength = generateOptions.ControlNetScale,
+                Hires = hiresDefaults.GetHiresOptions(generateOptions, pipelineOptions),
+                SampleParameters = samplerDefaults with
+                {
+                    SampleSteps = generateOptions.Steps,
+                    TxtCfg = GetTextGuidance(generateOptions.GuidanceScale, generateOptions.GuidanceScale2, pipelineOptions.Pipeline),
+                    DistilledGuidance = GetDistilledGuidance(generateOptions.GuidanceScale, generateOptions.GuidanceScale2, pipelineOptions.Pipeline),
+                    Eta = generateOptions.SchedulerOptions.Eta > 0 ? generateOptions.SchedulerOptions.Eta : samplerDefaults.Eta,
+                    FlowShift = generateOptions.SchedulerOptions.FlowShift > 0 ? generateOptions.SchedulerOptions.FlowShift : samplerDefaults.FlowShift,
+                    SampleMethod = GetSamplerType(generateOptions.SchedulerOptions),
+                    Scheduler = GetSchedulerType(generateOptions.SchedulerOptions),
+                },
+                HighNoiseSampleParameters = samplerHighNoiseDefaults with
+                {
+                    SampleSteps = generateOptions.Steps2,
+                    TxtCfg = GetTextGuidanceHighNoise(generateOptions.GuidanceScale, generateOptions.GuidanceScale2, pipelineOptions.Pipeline),
+                    DistilledGuidance = GetDistilledGuidanceHighNoise(generateOptions.GuidanceScale, generateOptions.GuidanceScale2, pipelineOptions.Pipeline),
+                    Eta = generateOptions.SchedulerOptions.Eta > 0 ? generateOptions.SchedulerOptions.Eta : samplerDefaults.Eta,
+                    FlowShift = generateOptions.SchedulerOptions.FlowShift > 0 ? generateOptions.SchedulerOptions.FlowShift : samplerDefaults.FlowShift,
+                    SampleMethod = GetSamplerType(generateOptions.SchedulerOptions),
+                    Scheduler = GetSchedulerType(generateOptions.SchedulerOptions),
 
-            if (openPort <= PortEnd)
-                return (short)openPort;
-
-            throw new Exception("Unable to locate open port");
+                },
+                VaeTilingParameters = defaultOptions.VaeTilingParameters with
+                {
+                    Enabled = generateOptions.EnableVaeTiling,
+                    TemporalTiling = generateOptions.EnableVaeSlicing
+                }
+            };
         }
 
 
-        private static bool GetBackend(PipelineCreateOptions createOptions, out Common.BackendType backendType)
-        {
-            return Enum.TryParse<Common.BackendType>(createOptions.HostVersion, true, out backendType);
-        }
-
-
-        private static string GetInitImage(GenerateImageOptions options, ProcessType processType)
-        {
-            if (options.InputImages.IsNullOrEmpty())
-                return default;
-
-            if (processType == ProcessType.ImageToImage || processType == ProcessType.ImageToImageControlNet || processType == ProcessType.ImageInpaint)
-                return GetBase64Image(options.InputImages[0]);
-
-            return default;
-        }
-
-
-        private static string GetControlNetImage(GenerateImageOptions options, ProcessType processType)
-        {
-            if (options.InputControlImages.IsNullOrEmpty())
-                return default;
-
-            if (processType == ProcessType.ImageControlNet || processType == ProcessType.ImageToImageControlNet)
-                return GetBase64Image(options.InputControlImages[0]);
-
-            return default;
-        }
-
-
-        private static List<string> GetReferenceImages(GenerateImageOptions options, ProcessType processType)
-        {
-            if (options.InputImages.IsNullOrEmpty())
-                return default;
-
-            if (processType == ProcessType.ImageEdit)
-                return GetBase64Images(options.InputImages);
-
-            return default;
-        }
-
-
-        private static string GetMaskImage(GenerateImageOptions options, ProcessType processType)
-        {
-            if (options.InputImages.IsNullOrEmpty())
-                return default;
-
-            if (options.InputImages.Count < 2)
-                return default;
-
-            if (processType == ProcessType.ImageInpaint)
-                return GetBase64Image(options.InputImages[1]);
-
-            return default;
-        }
-
-
-        private static string GetFirstFrame(GenerateVideoOptions options, ProcessType processType)
-        {
-            if (options.InputImages.IsNullOrEmpty())
-                return default;
-
-            if (options.InputImages.Count > 2)
-                return default;
-
-            if (processType == ProcessType.ImageToVideo)
-                return GetBase64Image(options.InputImages[0]);
-
-            return default;
-        }
-
-
-        private static string GetLastFrame(GenerateVideoOptions options, ProcessType processType)
-        {
-            if (options.InputImages.IsNullOrEmpty())
-                return default;
-
-            if (options.InputImages.Count != 2)
-                return default;
-
-            if (processType == ProcessType.ImageToVideo)
-                return GetBase64Image(options.InputImages.Last());
-
-            return default;
-        }
-
-
-        private static List<string> GetControlFrames(GenerateVideoOptions options, ProcessType processType)
-        {
-            if (options.InputImages.IsNullOrEmpty())
-                return default;
-
-            if (options.InputImages.Count > 2 && processType == ProcessType.ImageToVideo)
-                return GetBase64Images(options.InputImages);
-
-            return default;
-        }
-
-
-        private static string GetBase64Image(this ImageTensor imageTensor)
-        {
-            if (imageTensor == null)
-                return string.Empty;
-
-            return imageTensor.ToImageBase64();
-        }
-
-
-        private static List<string> GetBase64Images(this List<ImageTensor> imageTensors)
-        {
-            if (imageTensors.IsNullOrEmpty())
-                return default;
-
-            var base64Images = new List<string>();
-            foreach (var imageTensor in imageTensors)
-            {
-                var base64Image = GetBase64Image(imageTensor);
-                if (string.IsNullOrEmpty(base64Image))
-                    continue;
-
-                base64Images.Add(base64Image);
-            }
-            return base64Images;
-        }
-
-
-        public static void SendMessage(this IProgress<PipelineProgress> progressCallback, string message)
+        /// <summary>
+        /// Sends a progress message.
+        /// </summary>
+        /// <param name="progressCallback">The progress callback.</param>
+        /// <param name="message">The message.</param>
+        internal static void SendProgressMessage(this IProgress<PipelineProgress> progressCallback, string message)
         {
             progressCallback?.Report(new PipelineProgress
             {
@@ -524,58 +285,409 @@ namespace Amuse.Host.StableDiffusionCpp
         }
 
 
-        private static HiresParams GetHiresParams(PipelineLoadOptions loadOptions, GenerateImageOptions generateOptions)
+        /// <summary>
+        /// Gets the type of the backend.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>Pipeline.BackendType.</returns>
+        /// <exception cref="System.Exception">Backend Not Found</exception>
+        private static Pipeline.BackendType GetBackendType(PipelineCreateOptions options)
+        {
+            if (!Enum.TryParse(options.HostVersion, true, out Pipeline.BackendType backendType))
+                throw new Exception($"{options.HostVersion} Backend Not Found.");
+
+            return backendType;
+        }
+
+
+        /// <summary>
+        /// Gets the backend.
+        /// </summary>
+        /// <param name="pipelineOptions">The pipeline options.</param>
+        /// <param name="backendType">Type of the backend.</param>
+        private static string GetBackend(PipelineLoadOptions pipelineOptions, Pipeline.BackendType backendType)
+        {
+            var deviceId = backendType == Pipeline.BackendType.Vulkan
+                ? pipelineOptions.DeviceId
+                : pipelineOptions.DeviceVendorIndex;
+            return $"{backendType.GetShortName()}{deviceId}";
+        }
+
+
+        /// <summary>
+        /// Gets the parameters backend.
+        /// </summary>
+        /// <param name="pipelineOptions">The pipeline options.</param>
+        /// <param name="backendType">Type of the backend.</param>
+        private static string GetParamsBackend(PipelineLoadOptions pipelineOptions, Pipeline.BackendType backendType)
+        {
+            if (pipelineOptions.MemoryMode == MemoryModeType.OffloadCPU || pipelineOptions.MemoryMode == MemoryModeType.OffloadModel)
+            {
+                return "*=cpu,vae=disk,te=disk,clip_vision=disk";
+            }
+            return string.Empty;
+        }
+
+
+        /// <summary>
+        /// Gets the lora adapter options.
+        /// </summary>
+        /// <param name="loraAdapters">The lora adapters.</param>
+        /// <param name="loraAdapterOptions">The lora adapter options.</param>
+        private static PipelineCommon.LoraOptions[] GetLoraOptions(List<LoraConfig> loraAdapters, List<LoraOptions> loraAdapterOptions)
+        {
+            if (loraAdapterOptions.IsNullOrEmpty())
+                return [];
+
+            var loraParams = new List<PipelineCommon.LoraOptions>();
+            foreach (var config in loraAdapters)
+            {
+                var options = loraAdapterOptions.FirstOrDefault(x => x.Name == config.Name);
+                if (options == null)
+                    continue;
+
+                loraParams.Add(new PipelineCommon.LoraOptions
+                {
+                    Multiplier = options.Strength,
+                    Path = Path.Combine(config.Path, config.Weights),
+                });
+            }
+            return [.. loraParams];
+        }
+
+
+        /// <summary>
+        /// Gets the Image Hires options.
+        /// </summary>
+        /// <param name="deafultOptions">The deafult options.</param>
+        /// <param name="generateOptions">The generate options.</param>
+        /// <param name="pipelineOptions">The pipeline options.</param>
+        private static PipelineCommon.HiresOptions GetHiresOptions(this PipelineCommon.HiresOptions deafultOptions, GenerateImageOptions generateOptions, PipelineLoadOptions pipelineOptions)
         {
             if (generateOptions.LatentUpscale == LatentUpscale.Model || generateOptions.LatentUpscale == LatentUpscale.None)
-                return default;
+                return deafultOptions;
 
+            var upscaler = GetHiresUpscaleType(generateOptions.LatentUpscale);
             var tileSize = generateOptions.LatentUpscaleTileSize <= 0 ? 64 : generateOptions.LatentUpscaleTileSize;
             var steps = generateOptions.LatentUpscaleSteps <= 0 ? generateOptions.Steps / 2 : generateOptions.LatentUpscaleSteps;
-            return new HiresParams
+            return deafultOptions with
             {
                 Steps = steps,
                 Enabled = true,
+                Upscaler = upscaler,
                 UpscaleTileSize = tileSize,
-                Upscaler = generateOptions.LatentUpscale.GetName(),
                 DenoisingStrength = generateOptions.LatentUpscaleStrength,
+                ModelPath = pipelineOptions.CheckpointConfig.LatentUpsampler
             };
         }
 
 
-        private static HiresParams GetHiresParams(PipelineLoadOptions loadOptions, GenerateVideoOptions generateOptions)
+        /// <summary>
+        /// Gets the Video Hires options.
+        /// </summary>
+        /// <param name="deafultOptions">The deafult options.</param>
+        /// <param name="generateOptions">The generate options.</param>
+        /// <param name="pipelineOptions">The pipeline options.</param>
+        /// <returns>PipelineCommon.HiresOptions.</returns>
+        private static PipelineCommon.HiresOptions GetHiresOptions(this PipelineCommon.HiresOptions deafultOptions, GenerateVideoOptions generateOptions, PipelineLoadOptions pipelineOptions)
         {
             if (generateOptions.LatentUpscale == LatentUpscale.None)
-                return default;
+                return deafultOptions;
 
-            var upscaleName = generateOptions.LatentUpscale.GetName();
-            if (generateOptions.LatentUpscale == LatentUpscale.Model)
-            {
-                if (!File.Exists(loadOptions.CheckpointConfig.LatentUpsampler))
-                    return default;
-
-                upscaleName = Path.GetFileNameWithoutExtension(loadOptions.CheckpointConfig.LatentUpsampler);
-            }
-
+            var upscaler = GetHiresUpscaleType(generateOptions.LatentUpscale);
             var tileSize = generateOptions.LatentUpscaleTileSize <= 0 ? 64 : generateOptions.LatentUpscaleTileSize;
             var steps = generateOptions.LatentUpscaleSteps <= 0 ? generateOptions.Steps / 2 : generateOptions.LatentUpscaleSteps;
-            return new HiresParams
+            return deafultOptions with
             {
                 Steps = steps,
                 Enabled = true,
-                Upscaler = upscaleName,
+                Upscaler = upscaler,
                 UpscaleTileSize = tileSize,
                 CustomSigmas = [0.85f, 0.725f, 0.421875f, 0.0f], // TODO: optional
                 DenoisingStrength = generateOptions.LatentUpscaleStrength,
+                ModelPath = pipelineOptions.CheckpointConfig.LatentUpsampler
             };
         }
 
 
-        private static string GetHiresModelPath(PipelineLoadOptions loadOptions)
+        /// <summary>
+        /// Gets the initial image.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="processType">Type of the process.</param>
+        private static ImageTensor GetInitImage(GenerateImageOptions options, ProcessType processType)
         {
-            if (!File.Exists(loadOptions.CheckpointConfig.LatentUpsampler))
+            if (options.InputImages.IsNullOrEmpty())
                 return default;
 
-            return Path.GetDirectoryName(loadOptions.CheckpointConfig.LatentUpsampler);
+            if (processType == ProcessType.ImageToImage || processType == ProcessType.ImageToImageControlNet || processType == ProcessType.ImageInpaint)
+                return options.InputImages[0];
+
+            return default;
+        }
+
+
+        /// <summary>
+        /// Gets the control net image.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="processType">Type of the process.</param>
+        private static ImageTensor GetControlNetImage(GenerateImageOptions options, ProcessType processType)
+        {
+            if (options.InputControlImages.IsNullOrEmpty())
+                return default;
+
+            if (processType == ProcessType.ImageControlNet || processType == ProcessType.ImageToImageControlNet)
+                return options.InputControlImages[0];
+
+            return default;
+        }
+
+
+        /// <summary>
+        /// Gets the reference images.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="processType">Type of the process.</param>
+        private static ImageTensor[] GetReferenceImages(GenerateImageOptions options, ProcessType processType)
+        {
+            if (options.InputImages.IsNullOrEmpty())
+                return default;
+
+            if (processType == ProcessType.ImageEdit)
+                return [.. options.InputImages];
+
+            return default;
+        }
+
+
+        /// <summary>
+        /// Gets the mask image.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="processType">Type of the process.</param>
+        private static ImageTensor GetMaskImage(GenerateImageOptions options, ProcessType processType)
+        {
+            if (options.InputImages.IsNullOrEmpty())
+                return default;
+
+            if (options.InputImages.Count < 2)
+                return default;
+
+            if (processType == ProcessType.ImageInpaint)
+                return options.InputImages[1];
+
+            return default;
+        }
+
+
+        /// <summary>
+        /// Gets the first frame image.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="processType">Type of the process.</param>
+        private static ImageTensor GetFirstFrame(GenerateVideoOptions options, ProcessType processType)
+        {
+            if (options.InputImages.IsNullOrEmpty())
+                return default;
+
+            if (options.InputImages.Count > 2)
+                return default;
+
+            if (processType == ProcessType.ImageToVideo)
+                return options.InputImages[0];
+
+            return default;
+        }
+
+
+        /// <summary>
+        /// Gets the last frame image.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="processType">Type of the process.</param>
+        private static ImageTensor GetLastFrame(GenerateVideoOptions options, ProcessType processType)
+        {
+            if (options.InputImages.IsNullOrEmpty())
+                return default;
+
+            if (options.InputImages.Count != 2)
+                return default;
+
+            if (processType == ProcessType.ImageToVideo)
+                return options.InputImages.Last();
+
+            return default;
+        }
+
+
+        /// <summary>
+        /// Gets the control frames.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <param name="processType">Type of the process.</param>
+        private static ImageTensor[] GetControlFrames(GenerateVideoOptions options, ProcessType processType)
+        {
+            if (options.InputImages.IsNullOrEmpty())
+                return default;
+
+            if (options.InputImages.Count > 2 && processType == ProcessType.ImageToVideo)
+                return [.. options.InputImages];
+
+            return default;
+        }
+
+
+        /// <summary>
+        /// Gets the text guidance.
+        /// </summary>
+        /// <param name="guidanceScale">The guidance scale.</param>
+        /// <param name="guidanceScale2">The guidance scale2.</param>
+        /// <param name="pipelineType">Type of the pipeline.</param>
+        private static float GetTextGuidance(float guidanceScale, float guidanceScale2, string pipelineType)
+        {
+            if (pipelineType == "WanPipeline")
+                return Math.Max(1, guidanceScale2);
+            return Math.Max(1, guidanceScale);
+        }
+
+
+        /// <summary>
+        /// Gets the distilled guidance.
+        /// </summary>
+        /// <param name="guidanceScale">The guidance scale.</param>
+        /// <param name="guidanceScale2">The guidance scale2.</param>
+        /// <param name="pipelineType">Type of the pipeline.</param>
+        private static float GetDistilledGuidance(float guidanceScale, float guidanceScale2, string pipelineType)
+        {
+            if (pipelineType == "WanPipeline")
+                return Math.Max(1, guidanceScale2);
+            return Math.Max(1, guidanceScale2);
+        }
+
+
+        /// <summary>
+        /// Gets the text guidance (high noise).
+        /// </summary>
+        /// <param name="guidanceScale">The guidance scale.</param>
+        /// <param name="guidanceScale2">The guidance scale2.</param>
+        /// <param name="pipelineType">Type of the pipeline.</param>
+        private static float GetTextGuidanceHighNoise(float guidanceScale, float guidanceScale2, string pipelineType)
+        {
+            if (pipelineType == "WanPipeline")
+                return Math.Max(1, guidanceScale);
+            return Math.Max(1, guidanceScale2);
+        }
+
+
+        /// <summary>
+        /// Gets the distilled guidance (high noise).
+        /// </summary>
+        /// <param name="guidanceScale">The guidance scale.</param>
+        /// <param name="guidanceScale2">The guidance scale2.</param>
+        /// <param name="pipelineType">Type of the pipeline.</param>
+        private static float GetDistilledGuidanceHighNoise(float guidanceScale, float guidanceScale2, string pipelineType)
+        {
+            if (pipelineType == "WanPipeline")
+                return Math.Max(1, guidanceScale);
+            return Math.Max(1, guidanceScale);
+        }
+
+
+        /// <summary>
+        /// Gets the type of the sampler.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        private static Pipeline.SamplerType GetSamplerType(SchedulerOptions options)
+        {
+            return options.Scheduler switch
+            {
+                SchedulerType.Euler => Pipeline.SamplerType.Euler,
+                SchedulerType.EulerAncestral => Pipeline.SamplerType.Euler_A,
+                SchedulerType.Heun => Pipeline.SamplerType.Heun,
+                SchedulerType.DPM2 => Pipeline.SamplerType.DPM2,
+                SchedulerType.DPMPlusPlus2SAncestral => Pipeline.SamplerType.DPMPP2S_A,
+                SchedulerType.DPMPlusPlus2M => Pipeline.SamplerType.DPMPP2M,
+                SchedulerType.DPMPlusPlus2Mv2 => Pipeline.SamplerType.DPMPP2Mv2,
+                SchedulerType.IPNDM => Pipeline.SamplerType.IPNDM,
+                SchedulerType.LCM => Pipeline.SamplerType.LCM,
+                SchedulerType.DDIM => Pipeline.SamplerType.DDIM,
+                SchedulerType.TCD => Pipeline.SamplerType.TCD,
+                SchedulerType.ResidualMultistep => Pipeline.SamplerType.ResidualMultiStep,
+                SchedulerType.Residual2S => Pipeline.SamplerType.Residual2S,
+                SchedulerType.ERSDE => Pipeline.SamplerType.ER_SDE,
+                SchedulerType.DPMPlusPlus2MSDE => Pipeline.SamplerType.DPMPP2M_SDE,
+                SchedulerType.DPMPlusPlus2MSDEBT => Pipeline.SamplerType.DPMPP2M_SDE_BT,
+                SchedulerType.LMS => Pipeline.SamplerType.LMS,
+                _ => Pipeline.SamplerType.Default
+            };
+        }
+
+
+        /// <summary>
+        /// Gets the type of the scheduler.
+        /// </summary>
+        /// <param name="options">The options.</param>
+        /// <returns>Pipeline.SchedulerType.</returns>
+        private static Pipeline.SchedulerType GetSchedulerType(SchedulerOptions options)
+        {
+            return options.SigmaScheduleType switch
+            {
+                SigmaScheduleType.Discrete => Pipeline.SchedulerType.Discrete,
+                SigmaScheduleType.Karras => Pipeline.SchedulerType.Karras,
+                SigmaScheduleType.Exponential => Pipeline.SchedulerType.Exponential,
+                SigmaScheduleType.AYS => Pipeline.SchedulerType.AYS,
+                SigmaScheduleType.GITS => Pipeline.SchedulerType.GITS,
+                SigmaScheduleType.SGMUniform => Pipeline.SchedulerType.SGMUniform,
+                SigmaScheduleType.Simple => Pipeline.SchedulerType.Simple,
+                SigmaScheduleType.Smoothstep => Pipeline.SchedulerType.Smoothstep,
+                SigmaScheduleType.KLOptimal => Pipeline.SchedulerType.KlOptimal,
+                SigmaScheduleType.LCM => Pipeline.SchedulerType.LCM,
+                SigmaScheduleType.BongTangent => Pipeline.SchedulerType.BongTangent,
+                SigmaScheduleType.LTX2 => Pipeline.SchedulerType.LTX2,
+                SigmaScheduleType.LogitNormal => Pipeline.SchedulerType.LogitNormal,
+                SigmaScheduleType.Flux => Pipeline.SchedulerType.FLUX,
+                SigmaScheduleType.Flux2 => Pipeline.SchedulerType.FLUX2,
+                SigmaScheduleType.Beta => Pipeline.SchedulerType.Beta,
+                _ => Pipeline.SchedulerType.Default
+            };
+        }
+
+
+        /// <summary>
+        /// Gets the type of the Hires upscale.
+        /// </summary>
+        /// <param name="latentUpscaleType">Type of the latent upscale.</param>
+        /// <returns>Pipeline.HiresUpscaleType.</returns>
+        private static Pipeline.HiresUpscaleType GetHiresUpscaleType(LatentUpscale latentUpscaleType)
+        {
+            return latentUpscaleType switch
+            {
+                LatentUpscale.Lanczos => Pipeline.HiresUpscaleType.Lanczos,
+                LatentUpscale.Latent => Pipeline.HiresUpscaleType.Latent,
+                LatentUpscale.LatentAntialiased => Pipeline.HiresUpscaleType.LatentAntialiased,
+                LatentUpscale.LatentBicubic => Pipeline.HiresUpscaleType.LatentBicubic,
+                LatentUpscale.LatentBicubicAntialiased => Pipeline.HiresUpscaleType.LatentBicubicAntialiased,
+                LatentUpscale.LatentNearest => Pipeline.HiresUpscaleType.LatentNearest,
+                LatentUpscale.LatentNearestExact => Pipeline.HiresUpscaleType.LatentNearestExact,
+                LatentUpscale.Model => Pipeline.HiresUpscaleType.Model,
+                LatentUpscale.Nearest => Pipeline.HiresUpscaleType.Nearest,
+                LatentUpscale.None => Pipeline.HiresUpscaleType.None,
+                _ => Pipeline.HiresUpscaleType.Default
+            };
+        }
+
+
+        /// <summary>
+        /// Return default string if its only white space.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        private static string DefaultIfWhiteSpace(this string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return default;
+
+            return value;
         }
     }
 }

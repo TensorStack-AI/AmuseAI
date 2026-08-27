@@ -14947,22 +14947,22 @@
           "Name": "Transformer",
           "Type": "OnlineFile",
           "DownloadFiles": [
-            "https://huggingface.co/Comfy-Org/MiniMax-H3/resolve/main/diffusion_models/minimax_h3_fl2va_pruned_int8_convrot.safetensors"
+            "https://huggingface.co/unsloth/MiniMax-H3-GGUF/resolve/main/minimax_h3_fl2va_pruned-Q8_0.gguf"
           ]
         }
       },
       "MemoryProfile": [
         {
           "QualityMode": "Draft",
-          "MemoryModes": [ 6, 17, 26 ]
+          "MemoryModes": [ 6, 20, 24 ]
         },
         {
           "QualityMode": "Standard",
-          "MemoryModes": [ 6, 17, 26 ]
+          "MemoryModes": [ 6, 24, 36 ]
         },
         {
           "QualityMode": "Production",
-          "MemoryModes": [ 8, 17, 31 ]
+          "MemoryModes": [ 8, 24, 48 ]
         }
       ],
       "DefaultOptions": {
@@ -14975,7 +14975,7 @@
         "IsVaeTilingEnabled": true,
         "IsVaeSlicingEnabled": true,
         "IsFirstFrameLastFrameEnabled": true,
-        "Scheduler": "ResidualMultistep",
+        "Scheduler": "Euler",
         "Schedulers": [
           {
             "Scheduler": "Euler"
@@ -15065,6 +15065,10 @@
           "Height": 576
         },
         {
+          "Width": 960,
+          "Height": 544
+        },
+        {
           "Width": 864,
           "Height": 480,
           "IsDefault": true
@@ -15082,6 +15086,10 @@
           "Height": 864
         },
         {
+          "Width": 544,
+          "Height": 960
+        },
+        {
           "Width": 576,
           "Height": 1024
         },
@@ -15090,7 +15098,155 @@
           "Height": 1344
         }
       ],
-      "Link": "https://huggingface.co/Comfy-Org/MiniMax-H3"
+      "Link": "https://huggingface.co/unsloth/MiniMax-H3-GGUF"
+    },
+    {
+      "Id": 630,
+      "Backend": "StableDiffusionCpp",
+      "Name": "Chroma",
+      "Template": "Chroma",
+      "Pipeline": "ChromaPipeline",
+      "ModelType": "Base",
+      "BaseType": "bfloat16",
+      "MediaType": "Image",
+      "ProcessTypes": [ "TextToImage", "ImageToImage" ],
+      "Checkpoint": {
+        "Vae": {
+          "Name": "AutoEncoder",
+          "Type": "Component",
+          "Path": "VAE_Flux1"
+        },
+        "TextEncoder": {
+          "Name": "TextEncoder",
+          "Type": "Component",
+          "Path": "TE_T5_XXL"
+        },
+        "Transformer": {
+          "Name": "Transformer",
+          "Type": "OnlineFile",
+          "DownloadFiles": [
+            "https://huggingface.co/silveroxides/Chroma-GGUF/resolve/main/Chroma1-HD/Chroma1-HD-Q8_0.gguf"
+          ]
+        }
+      },
+      "MemoryProfile": [
+        {
+          "QualityMode": "Draft",
+          "MemoryModes": [ 2, 8, 14 ]
+        },
+        {
+          "QualityMode": "Standard",
+          "MemoryModes": [ 2, 13, 20 ]
+        },
+        {
+          "QualityMode": "Production",
+          "MemoryModes": [ 2, 23, 32 ]
+        }
+      ],
+      "DefaultOptions": {
+        "Steps": 30,
+        "Width": 1024,
+        "Height": 1024,
+        "GuidanceScale": 4.0,
+        "Scheduler": "Euler",
+        "Schedulers": [
+          {
+            "Scheduler": "Euler"
+          },
+          {
+            "Scheduler": "EulerAncestral"
+          },
+          {
+            "Scheduler": "DPM2"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2SAncestral"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2M"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2Mv2"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2MSDE"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2MSDEBT"
+          },
+          {
+            "Scheduler": "ResidualMultistep"
+          },
+          {
+            "Scheduler": "Residual2S"
+          },
+          {
+            "Scheduler": "Heun"
+          },
+          {
+            "Scheduler": "IPNDM"
+          },
+          {
+            "Scheduler": "LCM"
+          },
+          {
+            "Scheduler": "DDIM"
+          },
+          {
+            "Scheduler": "TCD"
+          },
+          {
+            "Scheduler": "LMS"
+          },
+          {
+            "Scheduler": "ERSDE"
+          }
+        ]
+      },
+      "Resolutions": [
+        {
+          "Width": 640,
+          "Height": 1536
+        },
+        {
+          "Width": 768,
+          "Height": 1344
+        },
+        {
+          "Width": 832,
+          "Height": 1280
+        },
+        {
+          "Width": 896,
+          "Height": 1152
+        },
+        {
+          "Width": 768,
+          "Height": 768
+        },
+        {
+          "Width": 1024,
+          "Height": 1024,
+          "IsDefault": true
+        },
+        {
+          "Width": 1152,
+          "Height": 896
+        },
+        {
+          "Width": 1280,
+          "Height": 832
+        },
+        {
+          "Width": 1344,
+          "Height": 768
+        },
+        {
+          "Width": 1536,
+          "Height": 640
+        }
+      ],
+      "Link": "https://huggingface.co/silveroxides/Chroma-GGUF"
     }
   ],
   "LoraAdapterModels": [
@@ -15670,6 +15826,51 @@
         ]
       },
       "Link": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/tree/main/split_files/loras"
+    },
+    {
+      "Id": 340,
+      "Name": "Turbo T2V (Step:4)",
+      "Pipeline": "MiniMaxVideoPipeline",
+      "Key": "t2v4step",
+      "ViewFilter": [ "TextToVideo", "ImageToVideo" ],
+      "Checkpoint": {
+        "Name": "LoraAdapter",
+        "Type": "OnlineFile",
+        "DownloadFiles": [
+          "https://huggingface.co/lightx2v/Minimax-h3-Turbo/resolve/main/minimax_h3_fl2v_turbo_4step_v1.1_768p_comfyui_bf16.safetensors"
+        ]
+      },
+      "Link": "https://huggingface.co/lightx2v/Minimax-h3-Turbo"
+    },
+    {
+      "Id": 341,
+      "Name": "Turbo T2V (Step:8)",
+      "Pipeline": "MiniMaxVideoPipeline",
+      "Key": "t2v8step",
+      "ViewFilter": [ "TextToVideo", "ImageToVideo" ],
+      "Checkpoint": {
+        "Name": "LoraAdapter",
+        "Type": "OnlineFile",
+        "DownloadFiles": [
+          "https://huggingface.co/lightx2v/Minimax-h3-Turbo/resolve/main/minimax_h3_fl2v_turbo_8step_v1.0_comfyui_bf16.safetensors"
+        ]
+      },
+      "Link": "https://huggingface.co/lightx2v/Minimax-h3-Turbo"
+    },
+    {
+      "Id": 342,
+      "Name": "Turbo Ref (Step:4)",
+      "Pipeline": "MiniMaxVideoPipeline",
+      "Key": "ref4step",
+      "ViewFilter": [ "ImageToVideo", "VideoToVideo" ],
+      "Checkpoint": {
+        "Name": "LoraAdapter",
+        "Type": "OnlineFile",
+        "DownloadFiles": [
+          "https://huggingface.co/lightx2v/Minimax-h3-Turbo/resolve/main/minimax_h3_ref2v_turbo_4step_v0.1_comfyui_bf16.safetensors"
+        ]
+      },
+      "Link": "https://huggingface.co/lightx2v/Minimax-h3-Turbo"
     }
   ],
   "ControlNetModels": [

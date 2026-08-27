@@ -82,6 +82,27 @@
                             </ListBox.ItemTemplate>
                         </ListBox>
                     </DockPanel>
+
+                    <!--View Filters-->
+                    <StackPanel Margin="0,4">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="View Filter" Style="{StaticResource FieldTextBlockStyle}"/>
+                            <TextBlock Text="(optional)" Style="{StaticResource FieldTextBlockStyle}" FontSize="9" Margin="4,0,0,2" VerticalAlignment="Bottom"/>
+                        </StackPanel>
+                        <UniformGrid Columns="6" >
+                            <CheckBox x:Name="CheckBoxViewTextToImage" Content="TextToImage" />
+                            <CheckBox x:Name="CheckBoxViewImageToImage" Content="ImageToImage" />
+                            <CheckBox x:Name="CheckBoxViewImageEdit" Content="ImageEdit" />
+                            <CheckBox x:Name="CheckBoxViewImageInpaint" Content="ImageInpaint" />
+                            <CheckBox x:Name="CheckBoxViewPaintToImage" Content="PaintToImage" />
+                            <CheckBox x:Name="CheckBoxViewFrameToFrame" Content="FrameToFrame" />
+                            <CheckBox x:Name="CheckBoxViewTextToVideo" Content="TextToVideo" />
+                            <CheckBox x:Name="CheckBoxViewImageToVideo" Content="ImageToVideo" />
+                            <CheckBox x:Name="CheckBoxViewVideoToVideo" Content="VideoToVideo" />
+                            <CheckBox x:Name="CheckBoxViewTextToMusic" Content="TextToMusic" />
+                            <CheckBox x:Name="CheckBoxViewTextToAudio" Content="TextToAudio" />
+                        </UniformGrid>
+                    </StackPanel>
                 </StackPanel>
             </GroupBox>
 

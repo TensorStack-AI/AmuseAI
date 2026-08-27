@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Adam Clark. All rights reserved.
 // Licensed under the Apache 2.0 License.
 using Amuse.App.Common;
+using Amuse.App.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -126,6 +127,7 @@ namespace Amuse.App.Dialogs
 
         protected override Task SaveAsync()
         {
+            LoraModel.ViewFilter = GetViewFilter();
             var index = Settings.LoraAdapterModels.Count;
             if (IsUpdateMode)
             {
@@ -191,6 +193,7 @@ namespace Amuse.App.Dialogs
 
         private void Populate()
         {
+            SetViewFilters();
             if (!LoraModel.Triggers.IsNullOrEmpty())
             {
                 foreach (var trigger in LoraModel.Triggers)
@@ -223,5 +226,77 @@ namespace Amuse.App.Dialogs
             return $"{new string([.. LoraModel.Name.Where(char.IsLetterOrDigit)])}{LoraModel.Id}".ToLower();
         }
 
+
+        private View[] GetViewFilter()
+        {
+            IEnumerable<View> ViewFilters()
+            {
+                if (CheckBoxViewTextToImage.IsChecked == true)
+                    yield return View.TextToImage;
+                if (CheckBoxViewImageToImage.IsChecked == true)
+                    yield return View.ImageToImage;
+                if (CheckBoxViewImageEdit.IsChecked == true)
+                    yield return View.ImageEdit;
+                if (CheckBoxViewImageInpaint.IsChecked == true)
+                    yield return View.ImageInpaint;
+                if (CheckBoxViewPaintToImage.IsChecked == true)
+                    yield return View.PaintToImage;
+                if (CheckBoxViewFrameToFrame.IsChecked == true)
+                    yield return View.FrameToFrame;
+
+                if (CheckBoxViewTextToVideo.IsChecked == true)
+                    yield return View.TextToVideo;
+                if (CheckBoxViewImageToVideo.IsChecked == true)
+                    yield return View.ImageToVideo;
+                if (CheckBoxViewVideoToVideo.IsChecked == true)
+                    yield return View.VideoToVideo;
+
+                if (CheckBoxViewTextToMusic.IsChecked == true)
+                    yield return View.TextToMusic;
+                if (CheckBoxViewTextToAudio.IsChecked == true)
+                    yield return View.TextToAudio;
+            }
+
+            var viewFilters = ViewFilters().ToArray();
+            if (viewFilters.IsNullOrEmpty())
+                return null;
+
+            return viewFilters;
+        }
+
+
+        private void SetViewFilters()
+        {
+            if (LoraModel.ViewFilter.IsNullOrEmpty())
+                return;
+
+            foreach (var viewType in LoraModel.ViewFilter)
+            {
+                if (viewType == View.TextToImage)
+                    CheckBoxViewTextToImage.IsChecked = true;
+                if (viewType == View.ImageToImage)
+                    CheckBoxViewImageToImage.IsChecked = true;
+                if (viewType == View.ImageEdit)
+                    CheckBoxViewImageEdit.IsChecked = true;
+                if (viewType == View.ImageInpaint)
+                    CheckBoxViewImageInpaint.IsChecked = true;
+                if (viewType == View.PaintToImage)
+                    CheckBoxViewPaintToImage.IsChecked = true;
+                if (viewType == View.FrameToFrame)
+                    CheckBoxViewFrameToFrame.IsChecked = true;
+
+                if (viewType == View.TextToVideo)
+                    CheckBoxViewTextToVideo.IsChecked = true;
+                if (viewType == View.ImageToVideo)
+                    CheckBoxViewImageToVideo.IsChecked = true;
+                if (viewType == View.VideoToVideo)
+                    CheckBoxViewVideoToVideo.IsChecked = true;
+
+                if (viewType == View.TextToMusic)
+                    CheckBoxViewTextToMusic.IsChecked = true;
+                if (viewType == View.TextToAudio)
+                    CheckBoxViewTextToAudio.IsChecked = true;
+            }
+        }
     }
 }

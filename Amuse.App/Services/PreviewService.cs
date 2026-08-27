@@ -43,7 +43,7 @@ namespace Amuse.App.Services
         /// <param name="cancellationToken">The cancellation token.</param>
         public async Task LoadAsync(PipelineModel pipeline, CancellationToken cancellationToken = default)
         {
-            if (!_settings.IsDiffusionImagePreviewEnabled || pipeline.DiffusionModel == null)
+            if (!_settings.IsDiffusionImagePreviewEnabled || pipeline.DiffusionModel == null || pipeline.GenerateModel.Backend == BackendType.StableDiffusionCpp)
                 return;
 
             var timestamp = Stopwatch.GetTimestamp();

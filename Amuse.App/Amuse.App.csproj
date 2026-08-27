@@ -50,7 +50,7 @@
     <PackageReference Include="TensorStack.Upscaler" Version="$(PackageVersion)" />
     <PackageReference Include="TensorStack.Extractors" Version="$(PackageVersion)" />
     <PackageReference Include="TensorStack.TextGeneration" Version="$(PackageVersion)" />
-    <PackageReference Include="TensorStack.OnnxRuntime" Version="$(Version)" />
+    <PackageReference Include="TensorStack.OnnxRuntime" Version="$(PackageVersion)" />
     <PackageReference Include="TensorStack.OnnxRuntime.DML" Version="$(PackageVersion)" />
   </ItemGroup>
 

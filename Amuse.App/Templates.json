@@ -12420,6 +12420,176 @@
     },
     {
       "Backend": "StableDiffusionCpp",
+      "Name": "MiniMax_H3_Base_CPP",
+      "Template": "MiniMax_H3",
+      "Pipeline": "MiniMaxVideoPipeline",
+      "ModelType": "Base",
+      "BaseType": "bfloat16",
+      "MediaType": "Video",
+      "ProcessTypes": [ "TextToVideo", "ImageToVideo" ],
+      "Checkpoint": {
+        "Vae": {
+          "Name": "AutoEncoder",
+          "Type": "Component",
+          "Path": "VAE_MMH3"
+        },
+        "AudioVae": {
+          "Name": "AutoEncoder",
+          "Type": "Component",
+          "Path": "AVAE_MMH3"
+        },
+        "TextEncoder": {
+          "Name": "TextEncoder",
+          "Type": "Component",
+          "Path": "TE_MMH3_GGUF"
+        },
+        "Transformer": {
+          "Name": "Transformer",
+          "Type": "LocalFile"
+        }
+      },
+      "MemoryProfile": [
+        {
+          "QualityMode": "Draft",
+          "MemoryModes": [ 6, 20, 24 ]
+        },
+        {
+          "QualityMode": "Standard",
+          "MemoryModes": [ 6, 24, 36 ]
+        },
+        {
+          "QualityMode": "Production",
+          "MemoryModes": [ 8, 24, 48 ]
+        }
+      ],
+      "DefaultOptions": {
+        "Steps": 20,
+        "Frames": 56,
+        "FrameRate": 24,
+        "Width": 864,
+        "Height": 480,
+        "GuidanceScale": 1,
+        "IsVaeTilingEnabled": true,
+        "IsVaeSlicingEnabled": true,
+        "IsFirstFrameLastFrameEnabled": true,
+        "Scheduler": "ResidualMultistep",
+        "Schedulers": [
+          {
+            "Scheduler": "Euler"
+          },
+          {
+            "Scheduler": "EulerAncestral"
+          },
+          {
+            "Scheduler": "DPM2"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2SAncestral"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2M"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2Mv2"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2MSDE"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2MSDEBT"
+          },
+          {
+            "Scheduler": "ResidualMultistep",
+            "SigmaScheduleType": "Simple"
+          },
+          {
+            "Scheduler": "Residual2S"
+          },
+          {
+            "Scheduler": "Heun"
+          },
+          {
+            "Scheduler": "IPNDM"
+          },
+          {
+            "Scheduler": "LCM"
+          },
+          {
+            "Scheduler": "DDIM"
+          },
+          {
+            "Scheduler": "TCD"
+          },
+          {
+            "Scheduler": "LMS"
+          },
+          {
+            "Scheduler": "ERSDE"
+          }
+        ],
+        "Strength": 0.7,
+        "FrameOptions": [
+          5,
+          22,
+          39,
+          56,
+          73,
+          90,
+          107,
+          124,
+          158,
+          209,
+          260,
+          311,
+          362,
+          413,
+          464,
+          566,
+          668,
+          770,
+          872,
+          940,
+          991
+        ]
+      },
+      "Resolutions": [
+        {
+          "Width": 1344,
+          "Height": 768
+        },
+        {
+          "Width": 1024,
+          "Height": 576
+        },
+        {
+          "Width": 864,
+          "Height": 480,
+          "IsDefault": true
+        },
+        {
+          "Width": 768,
+          "Height": 768
+        },
+        {
+          "Width": 1024,
+          "Height": 1024
+        },
+        {
+          "Width": 480,
+          "Height": 864
+        },
+        {
+          "Width": 576,
+          "Height": 1024
+        },
+        {
+          "Width": 768,
+          "Height": 1344
+        }
+      ]
+    },
+    {
+      "Backend": "StableDiffusionCpp",
       "Name": "QwenImage_Base_CPP",
       "Template": "QwenImage",
       "Pipeline": "QwenImagePipeline",
@@ -15055,6 +15225,149 @@
           "Height": 640
         }
       ]
+    },
+    {
+      "Backend": "StableDiffusionCpp",
+      "Name": "Chroma_CPP",
+      "Template": "Chroma",
+      "Pipeline": "ChromaPipeline",
+      "ModelType": "Base",
+      "BaseType": "bfloat16",
+      "MediaType": "Image",
+      "ProcessTypes": [ "TextToImage", "ImageToImage" ],
+      "Checkpoint": {
+        "Vae": {
+          "Name": "AutoEncoder",
+          "Type": "Component",
+          "Path": "VAE_Flux1"
+        },
+        "TextEncoder": {
+          "Name": "TextEncoder",
+          "Type": "Component",
+          "Path": "TE_T5_XXL"
+        },
+        "Transformer": {
+          "Name": "Transformer",
+          "Type": "LocalFile"
+        }
+      },
+      "MemoryProfile": [
+        {
+          "QualityMode": "Draft",
+          "MemoryModes": [ 2, 8, 14 ]
+        },
+        {
+          "QualityMode": "Standard",
+          "MemoryModes": [ 2, 13, 20 ]
+        },
+        {
+          "QualityMode": "Production",
+          "MemoryModes": [ 2, 23, 32 ]
+        }
+      ],
+      "DefaultOptions": {
+        "Steps": 30,
+        "Width": 1024,
+        "Height": 1024,
+        "GuidanceScale": 4.0,
+        "Scheduler": "Euler",
+        "Schedulers": [
+          {
+            "Scheduler": "Euler"
+          },
+          {
+            "Scheduler": "EulerAncestral"
+          },
+          {
+            "Scheduler": "DPM2"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2SAncestral"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2M"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2Mv2"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2MSDE"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2MSDEBT"
+          },
+          {
+            "Scheduler": "ResidualMultistep"
+          },
+          {
+            "Scheduler": "Residual2S"
+          },
+          {
+            "Scheduler": "Heun"
+          },
+          {
+            "Scheduler": "IPNDM"
+          },
+          {
+            "Scheduler": "LCM"
+          },
+          {
+            "Scheduler": "DDIM"
+          },
+          {
+            "Scheduler": "TCD"
+          },
+          {
+            "Scheduler": "LMS"
+          },
+          {
+            "Scheduler": "ERSDE"
+          }
+        ]
+      },
+      "Resolutions": [
+        {
+          "Width": 640,
+          "Height": 1536
+        },
+        {
+          "Width": 768,
+          "Height": 1344
+        },
+        {
+          "Width": 832,
+          "Height": 1280
+        },
+        {
+          "Width": 896,
+          "Height": 1152
+        },
+        {
+          "Width": 768,
+          "Height": 768
+        },
+        {
+          "Width": 1024,
+          "Height": 1024,
+          "IsDefault": true
+        },
+        {
+          "Width": 1152,
+          "Height": 896
+        },
+        {
+          "Width": 1280,
+          "Height": 832
+        },
+        {
+          "Width": 1344,
+          "Height": 768
+        },
+        {
+          "Width": 1536,
+          "Height": 640
+        }
+      ]
     }
   ],
   "DiffusionTemplateMap": [
@@ -15495,6 +15808,16 @@
       ]
     },
     {
+      "Name": "Chroma",
+      "Backend": "PyTorch",
+      "Options": [
+        {
+          "Name": "Base",
+          "Template": "Chroma_CPP"
+        }
+      ]
+    },
+    {
       "Name": "Ernie Image",
       "Backend": "StableDiffusionCpp",
       "Options": [
@@ -15583,6 +15906,16 @@
         {
           "Name": "2.3 Distilled",
           "Template": "LTX23_Distilled_CPP"
+        }
+      ]
+    },
+    {
+      "Name": "MiniMax",
+      "Backend": "StableDiffusionCpp",
+      "Options": [
+        {
+          "Name": "H3 Video",
+          "Template": "MiniMax_H3_Base_CPP"
         }
       ]
     },

@@ -2,24 +2,25 @@
 using Amuse.Common.Config;
 using Amuse.Common.Message;
 using Microsoft.Extensions.Logging;
-using SkiaSharp;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using TensorStack.Common.Tensor;
+using TensorStack.Media;
 using TensorStack.Media.Image;
+using TensorStack.StableDiffusionCpp;
 
 namespace Amuse.Host.StableDiffusionCpp
 {
     public sealed class HostServer : PipelineServer
     {
+        private readonly IProgress<TensorStack.StableDiffusionCpp.Common.PipelineProgress> _pipelineRelayCallback;
         private readonly IProgress<PipelineProgress> _progressRelayCallback;
-        private StableDiffusionServer _pipeline;
-        private PipelineCreateOptions _pipelineCreateOptions;
-        private PipelineLoadOptions _pipelineLoadOptions;
-        private Config.ServerConfig _serverConfig;
+        private PipelineCreateOptions _options;
+        private PipelineLoadOptions _pipelineOptions;
+        private StableDiffusionPipeline _pipeline;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HostServer"/> class.
@@ -29,7 +30,8 @@ namespace Amuse.Host.StableDiffusionCpp
         public HostServer(ServerConfig channelConfig, ILogger logger)
             : base(channelConfig, logger)
         {
-            _progressRelayCallback = new Progress<PipelineProgress>(async (p) => await UpdateProgress(p));
+            _progressRelayCallback = new Progress<PipelineProgress>(async (p) => await QueueProgress(p));
+            _pipelineRelayCallback = new Progress<TensorStack.StableDiffusionCpp.Common.PipelineProgress>(async (p) => await UpdateProgress(p));
         }
 
 
@@ -46,10 +48,12 @@ namespace Amuse.Host.StableDiffusionCpp
         /// <summary>
         /// Called when the Channel is closed.
         /// </summary>
-        protected override async Task ChannelClosedAsync()
+        protected override Task ChannelClosedAsync()
         {
             if (_pipeline != null)
-                await _pipeline.DisposeAsync();
+                _pipeline.Dispose();
+
+            return Task.CompletedTask;
         }
 
 
@@ -62,11 +66,13 @@ namespace Amuse.Host.StableDiffusionCpp
         {
             try
             {
+                await SendLoadingProgress("Creating Environment...");
+
                 var timestamp = Stopwatch.GetTimestamp();
-                if (!await EnvironmentManager.InitializeAsync(request.CreateOptions, _progressRelayCallback))
+                if (!await InstallManager.InitializeAsync(request.CreateOptions, _progressRelayCallback))
                     throw new Exception($"Failed to Install StableDiffusion.Cpp {request.CreateOptions.HostVersion}");
 
-                _pipelineCreateOptions = request.CreateOptions;
+                _options = request.CreateOptions;
                 Logger.LogInformation($"[AmuseHost] [PipelineServer] [CreatePipeline] Environment created, Elapsed: {Stopwatch.GetElapsedTime(timestamp)}");
                 await SendResponse(cancellationToken);
             }
@@ -87,14 +93,19 @@ namespace Amuse.Host.StableDiffusionCpp
         {
             try
             {
-                await UpdateProgress(new PipelineProgress { Key = "Load", Subkey = "Pipeline", Message = "Loading Pipeline Components..." });
+                await SendLoadingProgress();
+                _pipelineOptions = request.LoadOptions;
 
-                _pipelineLoadOptions = request.LoadOptions;
-                await StartStableDiffusionServerAsync(cancellationToken);
+                var contextOptions = _options.CreateContextOptions(_pipelineOptions);
+                var backendDirectory = Path.Combine(_options.Directory, _options.Environment);
+                _pipeline = new StableDiffusionPipeline(backendDirectory, _pipelineRelayCallback, OnLogCallback);
+                await _pipeline.LoadContextAsync(contextOptions, cancellationToken);
+
                 await SendResponse(cancellationToken);
             }
             catch (Exception ex)
             {
+                _pipeline?.Dispose();
                 Logger.LogError(ex, "[AmuseHost] [PipelineServer] [LoadPipeline] An exception occurred loading pipeline.");
                 await SendException(ex, cancellationToken);
             }
@@ -110,10 +121,11 @@ namespace Amuse.Host.StableDiffusionCpp
         {
             try
             {
+                await SendLoadingProgress();
                 var reloadOptions = request.ReloadOptions;
-                _pipelineLoadOptions.LoraAdapters = reloadOptions.LoraAdapters;
-                _pipelineLoadOptions.ProcessType = reloadOptions.ProcessType;
-                _pipelineLoadOptions.ControlNet = reloadOptions.ControlNet;
+                _pipelineOptions.LoraAdapters = reloadOptions.LoraAdapters;
+                _pipelineOptions.ProcessType = reloadOptions.ProcessType;
+                _pipelineOptions.ControlNet = reloadOptions.ControlNet; // TODO: Reload model/controlnet
                 await SendResponse(cancellationToken);
             }
             catch (Exception ex)
@@ -133,7 +145,7 @@ namespace Amuse.Host.StableDiffusionCpp
         {
             try
             {
-                await _pipeline.StopAsync();
+                _pipeline.UnloadContext();
                 await SendResponse(cancellationToken);
             }
             catch (Exception ex)
@@ -153,33 +165,29 @@ namespace Amuse.Host.StableDiffusionCpp
         {
             try
             {
-                await UpdateProgress(new PipelineProgress { Key = "Load", Subkey = "Pipeline", Message = "Loading Pipeline Components..." });
+                await SendLoadingProgress();
                 using (PipelineCancellation = new CancellationTokenSource())
                 {
                     request.RunOptions.UnpackTensors(request);
-                    var modelConfig = _serverConfig.ModelConfig;
                     if (request.RunOptions.ImageOptions != null)
                     {
                         var options = request.RunOptions.ImageOptions;
-                        var defaultsParams = _pipeline.ModelCapabilities.DefaultParams.ImageParams;
-                        var generateParams = options.ToServerParams(modelConfig, _pipelineLoadOptions, defaultsParams);
-                        var result = await _pipeline.GenerateImageAsync(generateParams, PipelineCancellation.Token);
-                        await SendMessage(new PipelineResponse(GetImageTensor(result)), cancellationToken);
+                        var generateOptions = _pipeline.DefaultImageOptions.CreateImageOptions(options, _pipelineOptions);
+                        var imageResult = await _pipeline.GenerateImageAsync(generateOptions, PipelineCancellation.Token);
+                        await SendMessage(new PipelineResponse(imageResult), cancellationToken);
                     }
                     else if (request.RunOptions.VideoOptions != null)
                     {
                         var options = request.RunOptions.VideoOptions;
-                        var defaultsParams = _pipeline.ModelCapabilities.DefaultParams.VideoParams;
-                        var generateParams = options.ToServerParams(modelConfig, _pipelineLoadOptions, defaultsParams);
-                        var result = await _pipeline.GenerateVideoAsync(generateParams, PipelineCancellation.Token);
-                        await SaveVideoAsync(result, options.TempFileName, PipelineCancellation.Token);
+                        var generateVideoOptions = _pipeline.DefaultVideoOptions.CreateVideoOptions(options, _pipelineOptions);
+                        var videoResult = await _pipeline.GenerateVideoAsync(generateVideoOptions, PipelineCancellation.Token);
+                        await videoResult.SaveAsync(options.TempFileName, PipelineCancellation.Token);
                         await SendMessage(new PipelineResponse(default(Tensor<float>[])), cancellationToken);
                     }
                 }
             }
             catch (OperationCanceledException ex)
             {
-                await RestartStableDiffusionServerAsync();
                 Logger.LogError("[AmuseHost] [PipelineServer] [RunPipeline] {Message}", ex.Message);
                 await SendException(ex, cancellationToken);
             }
@@ -192,116 +200,53 @@ namespace Amuse.Host.StableDiffusionCpp
 
 
         /// <summary>
-        /// Start StableDiffusion.cpp server 
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        private async Task StartStableDiffusionServerAsync(CancellationToken cancellationToken = default)
-        {
-            _serverConfig = _pipelineLoadOptions.ToServerConfig(_pipelineCreateOptions);
-            _pipeline = new StableDiffusionServer(_serverConfig, _progressRelayCallback, Logger);
-            await _pipeline.StartAsync(cancellationToken);
-        }
-
-
-        /// <summary>
-        /// Restart StableDiffusion.cpp server 
-        /// </summary>
-        private async Task RestartStableDiffusionServerAsync()
-        {
-            await _pipeline.StopAsync();
-            await StartStableDiffusionServerAsync();
-        }
-
-
-        /// <summary>
         /// Updates the progress.
         /// </summary>
         /// <param name="progress">The progress.</param>
-        private async Task UpdateProgress(PipelineProgress progress)
+        private async Task UpdateProgress(TensorStack.StableDiffusionCpp.Common.PipelineProgress progress)
         {
-            await QueueProgress(progress);
+            await QueueProgress(new PipelineProgress
+            {
+                BatchMaximum = progress.BatchMaximum,
+                BatchValue = progress.BatchValue,
+                Elapsed = progress.Elapsed,
+                ElapsedKey = progress.ElapsedKey,
+                Key = progress.Key,
+                Maximum = progress.Maximum,
+                Message = progress.Message,
+                Subkey = progress.Subkey,
+                Timestamp = progress.Timestamp,
+                Value = progress.Value,
+                Tensors = progress.Tensors
+            });
         }
 
 
         /// <summary>
-        /// Save video converted from WEBM to MP4
+        /// Called when StableDiffusion.cpp log emitted.
         /// </summary>
-        /// <param name="webmBytes">The webm bytes.</param>
-        /// <param name="outputFile">The output file.</param>
-        /// <param name="cancellationToken">The cancellation token.</param>
-        private async Task SaveVideoAsync(byte[] webmBytes, string outputFile, CancellationToken cancellationToken = default)
+        /// <param name="level">The level.</param>
+        /// <param name="message">The message.</param>
+        private void OnLogCallback(LogLevelType level, string message)
         {
-            var encoders = new[]
+            var logLevel = level switch
             {
-                "h264_nvenc",      // NVIDIA
-                "h264_amf",        // AMD
-                "h264_qsv",        // Intel
-                "h264_d3d12va",    // Windows D3D12
-                "libopenh264",     // CPU fallback
+                LogLevelType.Info => LogLevel.Information,
+                LogLevelType.Debug => LogLevel.Debug,
+                LogLevelType.Warn => LogLevel.Warning,
+                LogLevelType.Error => LogLevel.Error,
+                _ => LogLevel.Trace
             };
-            Logger.LogInformation("[AmuseHost] [PipelineServer] [SaveVideoAsync] Saving output video...");
-            foreach (var encoder in encoders)
-            {
-                try
-                {
-                    if (await EncodeVideoAsync(webmBytes, outputFile, encoder, cancellationToken))
-                    {
-                        Logger.LogInformation($"[AmuseHost] [PipelineServer] [SaveVideoAsync] Successfully saved output video, Codec: {encoder}...", encoder);
-                        return;
-                    }
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch (Exception) { /* Codec not avaliable */ }
-            }
-
-            Logger.LogInformation($"[AmuseHost] [PipelineServer] [SaveVideoAsync] Successfully saved output video using fallback");
-            await File.WriteAllBytesAsync(outputFile, webmBytes, cancellationToken);
+            Logger?.Log(logLevel, "[StableDiffusion.cpp] {message}", message);
         }
 
 
         /// <summary>
-        /// Encode video
+        /// Sends loading the progress.
         /// </summary>
-        /// <param name="webmBytes">The webm bytes.</param>
-        /// <param name="outputFile">The output file.</param>
-        /// <param name="encoder">The encoder.</param>
-        /// <param name="cancellationToken">The cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
-        /// <returns>A Task&lt;System.Boolean&gt; representing the asynchronous operation.</returns>
-        private static async Task<bool> EncodeVideoAsync(byte[] webmBytes, string outputFile, string encoder, CancellationToken cancellationToken = default)
+        private async Task SendLoadingProgress(string message = null)
         {
-            var arguments = $"-hide_banner -f webm -i pipe:0 -c:v {encoder} -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart -y \"{outputFile}\"";
-            using (var process = new Process())
-            {
-                process.StartInfo.FileName = "ffmpeg.exe";
-                process.StartInfo.Arguments = arguments;
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.CreateNoWindow = true;
-                process.StartInfo.RedirectStandardInput = true;
-                process.StartInfo.RedirectStandardError = true;
-                process.Start();
-                var errorTask = process.StandardError.ReadToEndAsync();
-                await process.StandardInput.BaseStream.WriteAsync(webmBytes, cancellationToken);
-                process.StandardInput.Close();
-                await process.WaitForExitAsync(cancellationToken);
-                var error = await errorTask;
-                return process.ExitCode == 0;
-            }
-        }
-
-
-        /// <summary>
-        /// Gets the image tensor.
-        /// </summary>
-        /// <param name="imageBytes">The image bytes.</param>
-        private static ImageTensor GetImageTensor(byte[] imageBytes)
-        {
-            using (var bitmap = SKBitmap.Decode(imageBytes))
-            {
-                return bitmap.ToTensor();
-            }
+            await QueueProgress(new PipelineProgress { Key = "Load", Subkey = "Pipeline", Message = message ?? "Loading Pipeline Components..." });
         }
     }
 }
