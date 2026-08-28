@@ -10845,7 +10845,7 @@
         "Width": 1024,
         "Height": 1024,
         "GuidanceScale": 6,
-        "Scheduler": "DDIM",
+        "Scheduler": "Euler",
         "Schedulers": [
           {
             "Scheduler": "Euler"

@@ -33,20 +33,21 @@ namespace Amuse.Host.StableDiffusionCpp
 
                 // Memory
                 MaxVram = pipelineOptions.MemoryMode == MemoryModeType.Device ? "0" : "-1",
-                DataType = Pipeline.DataType.Default, //TODO: Quantization type
+                DataType = GetDataType(pipelineOptions.QuantType, pipelineOptions.MemoryMode),
                 AutoFit = pipelineOptions.MemoryMode == MemoryModeType.Balanced,
                 StreamLayers = pipelineOptions.MemoryMode == MemoryModeType.OffloadCPU,
-
-                // Vulkan
-                VaeConvDirect = backendType == Pipeline.BackendType.Vulkan,
-                DiffusionConvDirect = backendType == Pipeline.BackendType.Vulkan,
-                PreviewType = Pipeline.PreviewType.Projection,
+                EagerLoad = pipelineOptions.MemoryMode == MemoryModeType.Device,
 
                 // Misc
                 ForceSdxlVaeConvScale = true,
                 FlashAttn = pipelineOptions.IsFlashAttentionEnabled,
                 DiffusionFlashAttn = pipelineOptions.IsFlashAttentionEnabled,
                 LoraApplyMode = Pipeline.LoraApplyType.AtRuntime,
+                PreviewType = Pipeline.PreviewType.Projection,
+
+                // Vulkan Specific
+                VaeConvDirect = backendType == Pipeline.BackendType.Vulkan,
+                DiffusionConvDirect = backendType == Pipeline.BackendType.Vulkan,
             };
 
 
@@ -675,6 +676,26 @@ namespace Amuse.Host.StableDiffusionCpp
                 LatentUpscale.Nearest => Pipeline.HiresUpscaleType.Nearest,
                 LatentUpscale.None => Pipeline.HiresUpscaleType.None,
                 _ => Pipeline.HiresUpscaleType.Default
+            };
+        }
+
+
+        /// <summary>
+        /// Gets the DataType.
+        /// </summary>
+        /// <param name="quantType">Type of the quant.</param>
+        /// <param name="memoryMode">The memory mode.</param>
+        private static Pipeline.DataType GetDataType(QuantizationType quantType, MemoryModeType memoryMode)
+        {
+            if (memoryMode != MemoryModeType.Device)
+                return Pipeline.DataType.Default;
+
+            return quantType switch
+            {
+                QuantizationType.Q4Bit => Pipeline.DataType.Q4_0,
+                QuantizationType.Q8Bit => Pipeline.DataType.Q8_0,
+                QuantizationType.Q16Bit => Pipeline.DataType.BF16,
+                _ => Pipeline.DataType.Default
             };
         }
 
