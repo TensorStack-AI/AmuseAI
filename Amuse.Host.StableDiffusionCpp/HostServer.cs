@@ -7,9 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using TensorStack.Common.Tensor;
-using TensorStack.Media;
-using TensorStack.Media.Image;
 using TensorStack.StableDiffusionCpp;
 
 namespace Amuse.Host.StableDiffusionCpp
@@ -168,27 +165,27 @@ namespace Amuse.Host.StableDiffusionCpp
                 await SendLoadingProgress();
                 using (PipelineCancellation = new CancellationTokenSource())
                 {
-                    request.RunOptions.UnpackTensors(request);
+                    ReadTensorRequest(request);
+
                     if (request.RunOptions.ImageOptions != null)
                     {
                         var options = request.RunOptions.ImageOptions;
                         var generateOptions = _pipeline.DefaultImageOptions.CreateImageOptions(options, _pipelineOptions);
                         var imageResult = await _pipeline.GenerateImageAsync(generateOptions, PipelineCancellation.Token);
-                        await SendMessage(new PipelineResponse(imageResult), cancellationToken);
+                        await SendTensorResponse(cancellationToken, imageResult);
                     }
                     else if (request.RunOptions.VideoOptions != null)
                     {
                         var options = request.RunOptions.VideoOptions;
                         var generateVideoOptions = _pipeline.DefaultVideoOptions.CreateVideoOptions(options, _pipelineOptions);
                         var videoResult = await _pipeline.GenerateVideoAsync(generateVideoOptions, PipelineCancellation.Token);
-                        await videoResult.SaveAsync(options.TempFileName, PipelineCancellation.Token);
-                        await SendMessage(new PipelineResponse(default(Tensor<float>[])), cancellationToken);
+                        await SendTensorResponse(cancellationToken, videoResult);
                     }
                 }
             }
             catch (OperationCanceledException ex)
             {
-                Logger.LogError("[AmuseHost] [PipelineServer] [RunPipeline] {Message}", ex.Message);
+                Logger.LogInformation("[AmuseHost] [PipelineServer] [RunPipeline] {Message}", ex.Message);
                 await SendException(ex, cancellationToken);
             }
             catch (Exception ex)

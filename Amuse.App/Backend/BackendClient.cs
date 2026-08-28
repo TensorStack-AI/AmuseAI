@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TensorStack.Common;
 using TensorStack.Common.Tensor;
+using TensorStack.Media;
 using TensorStack.Media.Image;
 using TensorStack.Media.Audio;
 using TensorStack.Media.Video;
@@ -192,15 +193,15 @@ namespace Amuse.App.Runtime
                 options.Seed = options.Seed > 0 ? options.Seed : Random.Shared.Next();
                 options.NegativePrompt = options.GuidanceScale > 1f && string.IsNullOrEmpty(options.NegativePrompt) ? " " : options.NegativePrompt;
                 var generateOptions = GenerateImageOptions(options, imageFileName);
-                var tensorResult = await PipelineClient.GenerateImageAsync(generateOptions);
-                if (tensorResult is null)
+                var imageTensors = await PipelineClient.GenerateImageAsync(generateOptions);
+                if (imageTensors.IsNullOrEmpty())
                 {
                     if (!File.Exists(imageFileName))
                         throw new Exception("Generated video result not found.");
 
                     return await ImageInput.CreateAsync(imageFileName);
                 }
-                return tensorResult.AsImageTensor();
+                return imageTensors[0];
             }
             catch (IOException ex)
             {
@@ -224,8 +225,8 @@ namespace Amuse.App.Runtime
                 options.Seed = options.Seed > 0 ? options.Seed : Random.Shared.Next();
                 options.NegativePrompt = options.GuidanceScale > 1f && string.IsNullOrEmpty(options.NegativePrompt) ? " " : options.NegativePrompt;
                 var generateOptions = GenerateVideoOptions(options, videoFileName);
-                var tensorResult = await PipelineClient.GenerateVideoAsync(generateOptions);
-                if (tensorResult is null)
+                var videoSequences = await PipelineClient.GenerateVideoAsync(generateOptions);
+                if (videoSequences.IsNullOrEmpty())
                 {
                     if (!File.Exists(videoFileName))
                         throw new Exception("Generated video result not found.");
@@ -233,8 +234,7 @@ namespace Amuse.App.Runtime
                     return new VideoInputStream(videoFileName);
                 }
 
-                var videoTensor = tensorResult.AsVideoTensor(generateOptions.FrameRate);
-                await videoTensor.SaveAsync(videoFileName);
+                await videoSequences[0].SaveAsync(videoFileName);
                 return new VideoInputStream(videoFileName);
             }
             catch (IOException ex)
@@ -263,8 +263,8 @@ namespace Amuse.App.Runtime
                     generateOptions.InputAudios.Add(await inputAudios.GetAsync(DefaultOptions.SampleRate, DefaultOptions.Channels));
                 }
 
-                var tensorResult = await PipelineClient.GenerateAudioAsync(generateOptions);
-                if (tensorResult is null)
+                var audioTensors = await PipelineClient.GenerateAudioAsync(generateOptions);
+                if (audioTensors.IsNullOrEmpty())
                 {
                     if (!File.Exists(audioFileName))
                         throw new Exception("Generated audio result not found.");
@@ -272,7 +272,7 @@ namespace Amuse.App.Runtime
                     return await AudioInputStream.CreateAsync(audioFileName);
                 }
 
-                var audioInput = new AudioInput(tensorResult.AsAudioTensor(DefaultOptions.SampleRate));
+                var audioInput = new AudioInput(audioTensors[0]);
                 await audioInput.SaveAsync(audioFileName);
                 return await AudioInputStream.CreateAsync(audioFileName);
             }

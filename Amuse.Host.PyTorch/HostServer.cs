@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using TensorStack.Common.Tensor;
 using TensorStack.Python;
 
 namespace Amuse.Host.PyTorch
@@ -123,32 +124,32 @@ namespace Amuse.Host.PyTorch
         {
             try
             {
-               
                 PipelineCancellation = new CancellationTokenSource();
-                request.RunOptions.UnpackTensors(request);
+
+                ReadTensorRequest(request);
                 if (request.RunOptions.ImageOptions != null)
                 {
                     var pythonOptions = request.RunOptions.ImageOptions.ToPythonOptions();
                     var response = await _pipeline.GenerateImageAsync(pythonOptions, PipelineCancellation.Token);
-                    await SendMessage(new PipelineResponse(response), cancellationToken);
+                    await SendTensorResponse(cancellationToken, response);
                 }
                 else if (request.RunOptions.VideoOptions != null)
                 {
                     var pythonOptions = request.RunOptions.VideoOptions.ToPythonOptions();
                     var response = await _pipeline.GenerateVideoAsync(pythonOptions, PipelineCancellation.Token);
-                    await SendMessage(new PipelineResponse(response), cancellationToken);
+                    await SendTensorResponse(cancellationToken, default(VideoSequence));
                 }
                 else if (request.RunOptions.AudioOptions != null)
                 {
                     var pythonOptions = request.RunOptions.AudioOptions.ToPythonOptions();
                     var response = await _pipeline.GenerateAudioAsync(pythonOptions, PipelineCancellation.Token);
-                    await SendMessage(new PipelineResponse(response), cancellationToken);
+                    await SendTensorResponse(cancellationToken, response);
                 }
                 else if (request.RunOptions.TextOptions != null)
                 {
                     var pythonOptions = request.RunOptions.TextOptions.ToPythonOptions();
                     var response = await _pipeline.GenerateTextAsync(pythonOptions, PipelineCancellation.Token);
-                    await SendMessage(new PipelineResponse(response), cancellationToken);
+                    await SendTensorResponse(cancellationToken, response);
                 }
             }
             catch (OperationCanceledException ex)

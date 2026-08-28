@@ -3,11 +3,13 @@ using Amuse.Common.Message;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
+using System.IO.MemoryMappedFiles;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using TensorStack.Common;
+using TensorStack.Common.Tensor;
 
 namespace Amuse.Common
 {
@@ -18,6 +20,7 @@ namespace Amuse.Common
         private readonly NamedPipeServerStream _progressChannel;
         private readonly Channel<PipelineProgress> _progressQueue;
         private RequestType _pipelineState;
+        private MemoryMappedFile _tensorChannel;
 
 
         public PipelineServer(ServerConfig config, ILogger logger)
@@ -155,22 +158,24 @@ namespace Amuse.Common
                 try
                 {
                     Logger.LogInformation($"[AmuseHost] [PipelineServer] [CommandChannel] Waiting for command...");
-                    var commandMessage = await _commandChannel.ReceiveObject<CommandRequest>(cancellationToken);
+                    var commandMessage = await _commandChannel.ReceiveMessage<CommandRequest>(cancellationToken);
                     if (commandMessage == null)
                         continue;
 
                     Logger.LogInformation("[AmuseHost] [PipelineServer] [CommandChannel] Received {Type} command.", commandMessage.Type);
                     if (commandMessage.Type == CommandRequestType.Cancel)
                         await PipelineCancellation.SafeCancelAsync();
+                    else if (commandMessage.Type == CommandRequestType.Complete)
+                        await CloseTensorChannelAsync();
 
-                    await _commandChannel.SendObject(new CommandResponse(), cancellationToken);
+                    await _commandChannel.SendMessage(new CommandResponse(), cancellationToken);
                     Logger.LogInformation("[AmuseHost] [PipelineServer] [CommandChannel] Processed {Type} command.", commandMessage.Type);
                 }
                 catch (OperationCanceledException) { }
                 catch (Exception ex)
                 {
                     Logger.LogError(ex, $"[AmuseHost] [PipelineServer] [CommandChannel] - An exception occurred receiving command.");
-                    await _commandChannel.SendObject(new CommandResponse(ex), cancellationToken);
+                    await _commandChannel.SendMessage(new CommandResponse(ex), cancellationToken);
                 }
             }
             Logger.LogInformation($"[AmuseHost] [PipelineServer] [CommandChannel] Close command channel.");
@@ -188,7 +193,7 @@ namespace Amuse.Common
             {
                 try
                 {
-                    await _progressChannel.SendMessage(progressMessage, cancellationToken);
+                    await _progressChannel.SendTensorMessage(progressMessage, cancellationToken);
                 }
                 catch (OperationCanceledException) { }
                 catch (Exception ex)
@@ -207,7 +212,7 @@ namespace Amuse.Common
         /// <param name="cancellationToken">The cancellation token.</param>
         protected async Task StartServerAsync(PipelineRequest request, CancellationToken cancellationToken)
         {
-            await _pipelineChannel.SendResponse(cancellationToken);
+            await SendResponse(cancellationToken);
             Logger.LogInformation($"[AmuseHost] [PipelineServer] [StartServer] Server started.");
         }
 
@@ -219,21 +224,21 @@ namespace Amuse.Common
         /// <param name="cancellationToken">The cancellation token.</param>
         protected async Task StopServerAsync(PipelineRequest request, CancellationToken cancellationToken)
         {
-            await _pipelineChannel.SendResponse(cancellationToken);
+            await SendResponse(cancellationToken);
             Logger.LogInformation($"[AmuseHost] [PipelineServer] [StopServer] Server stopped.");
         }
 
 
-        protected async Task SendResponse(CancellationToken cancellationToken)
-        {
-            await _pipelineChannel.SendResponse(cancellationToken);
-        }
-
-
-        protected async Task SendMessage<T>(T message, CancellationToken cancellationToken) where T : IPipelineMessage
+        protected async Task SendResponse<T>(T message, CancellationToken cancellationToken)
         {
             await _pipelineChannel.SendMessage(message, cancellationToken);
         }
+
+        protected Task SendResponse(CancellationToken cancellationToken = default)
+        {
+            return _pipelineChannel.SendMessage(new PipelineResponse(), cancellationToken);
+        }
+
 
         protected async Task SendException(Exception exception, CancellationToken cancellationToken)
         {
@@ -241,10 +246,68 @@ namespace Amuse.Common
         }
 
 
+        protected async Task SendTensorResponse(CancellationToken cancellationToken, params ImageTensor[] image)
+        {
+            var response = new PipelineResponse(image);
+            var packedTensors = response.PackTensors();
+            _tensorChannel = PipelineTensorChannel.WriteResponse(packedTensors);
+            await _pipelineChannel.SendMessage(response, cancellationToken);
+        }
+
+
+        protected async Task SendTensorResponse(CancellationToken cancellationToken, params AudioTensor[] audio)
+        {
+            var response = new PipelineResponse(audio);
+            var packedTensors = response.PackTensors();
+            _tensorChannel = PipelineTensorChannel.WriteResponse(packedTensors);
+            await _pipelineChannel.SendMessage(response, cancellationToken);
+        }
+
+
+        protected async Task SendTensorResponse(CancellationToken cancellationToken, params VideoSequence[] video)
+        {
+            var response = new PipelineResponse(video);
+            var packedTensors = response.PackTensors();
+            _tensorChannel = PipelineTensorChannel.WriteResponse(packedTensors);
+            await _pipelineChannel.SendMessage(response, cancellationToken);
+        }
+
+
+        protected async Task SendTensorResponse(CancellationToken cancellationToken, params TextInput[] text)
+        {
+            var response = new PipelineResponse(text);
+            _tensorChannel = PipelineTensorChannel.WriteResponse([]);
+            await _pipelineChannel.SendMessage(response, cancellationToken);
+        }
+
+
+        protected void ReadTensorRequest(PipelineRequest request)
+        {
+            PipelineTensorChannel.ReadRequest(request);
+        }
+
+
+        protected Task CloseTensorChannelAsync()
+        {
+            _tensorChannel?.Dispose();
+            _tensorChannel = null;
+            return Task.CompletedTask;
+        }
+
+
+        protected async Task SendTensorResponse(PipelineResponse response, CancellationToken cancellationToken)
+        {
+            var packedTensors = response.PackTensors();
+            _tensorChannel = PipelineTensorChannel.WriteResponse(packedTensors);
+            await _pipelineChannel.SendMessage(response, cancellationToken);
+        }
+
+
         protected async Task QueueProgress(PipelineProgress progress)
         {
             await _progressQueue.Writer.WriteAsync(progress);
         }
+
 
         /// <summary>
         /// Called when the Channel is opened.

@@ -13,6 +13,7 @@
 
     public enum CommandRequestType
     {
-        Cancel = 0
+        Cancel = 0,
+        Complete = 1
     }
 }

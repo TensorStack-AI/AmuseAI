@@ -32,14 +32,12 @@
   <!--Debug-->
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <ProjectReference Include="..\..\TensorStack.Media.SkiaSharp\TensorStack.Media.SkiaSharp.csproj" />
-    <ProjectReference Include="..\..\TensorStack.Media.Windows\TensorStack.Media.Windows.csproj" />
     <ProjectReference Include="..\..\TensorStack.StableDiffusionCpp\TensorStack.StableDiffusionCpp.csproj" />
   </ItemGroup>
 
   <!--Release-->
   <ItemGroup Condition="'$(Configuration)' == 'Release' OR '$(Configuration)' == 'Release_Installer'">
     <PackageReference Include="TensorStack.Media.SkiaSharp" Version="$(PackageVersion)" />
-    <PackageReference Include="TensorStack.Media.Windows" Version="$(PackageVersion)" />
     <PackageReference Include="TensorStack.StableDiffusionCpp" Version="$(PackageVersion)" />
   </ItemGroup>
 

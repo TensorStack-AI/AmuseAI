@@ -2,10 +2,10 @@
 using Amuse.Common.Message;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TensorStack.Common;
@@ -109,8 +109,7 @@ namespace Amuse.Common
         /// <param name="cancellationToken">The cancellation token.</param>
         protected virtual async Task<PipelineResponse> SendPipelineRequestAsync(PipelineRequest request, CancellationToken cancellationToken = default)
         {
-            await _pipelineChannel.SendMessage(request, cancellationToken);
-            var response = await _pipelineChannel.ReceiveMessage<PipelineResponse>(cancellationToken);
+            var response = await SendPipelineRequest(request, cancellationToken);
             if (response.IsError)
             {
                 if (response.IsCanceled)
@@ -123,14 +122,38 @@ namespace Amuse.Common
 
 
         /// <summary>
-        /// Send a Object request to the Server
+        /// Send a Pipeline request to the Server with memory mapped tensor inputs
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
-        protected virtual async Task<CommandResponse> SendObjectRequestAsync(CommandRequest request, CancellationToken cancellationToken = default)
+        protected virtual async Task<PipelineResponse> SendPipelineTensorRequestAsync(PipelineRequest request, CancellationToken cancellationToken = default)
         {
-            await _commandChannel.SendObject(request, cancellationToken);
-            var response = await _commandChannel.ReceiveObject<CommandResponse>(cancellationToken);
+            using (var tensorChannel = PipelineTensorChannel.WriteRequest(request))
+            {
+                var response = await SendPipelineRequest(request, cancellationToken);
+                PipelineTensorChannel.ReadResponse(response);
+                await SendTensorResponseComplete(cancellationToken);
+                if (response.IsError)
+                {
+                    if (response.IsCanceled)
+                        throw new OperationCanceledException(response.Error);
+
+                    throw new Exception(response.Error);
+                }
+                return response;
+            }
+        }
+
+
+        /// <summary>
+        /// Send a CommandRequest to the Server
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        protected virtual async Task<CommandResponse> SendCommandRequestAsync(CommandRequest request, CancellationToken cancellationToken = default)
+        {
+            await _commandChannel.SendMessage(request, cancellationToken);
+            var response = await _commandChannel.ReceiveMessage<CommandResponse>(cancellationToken);
             if (response.IsError)
             {
                 if (response.IsCanceled)
@@ -204,7 +227,7 @@ namespace Amuse.Common
                         continue;
                     }
 
-                    var progress = await _progressChannel.ReceiveMessage<PipelineProgress>(_progressCancellation.Token);
+                    var progress = await _progressChannel.ReceiveTensorMessage<PipelineProgress>(_progressCancellation.Token);
                     if (progress == null || _isCanceled)
                         continue;
 
@@ -317,7 +340,7 @@ namespace Amuse.Common
         public async Task CancelAsync()
         {
             _isCanceled = true;
-            await SendObjectRequestAsync(new CommandRequest());
+            await SendCommandRequestAsync(new CommandRequest());
         }
 
 
@@ -325,14 +348,14 @@ namespace Amuse.Common
         /// Generates Image.
         /// </summary>
         /// <param name="options">The options.</param>
-        public async Task<Tensor<float>> GenerateImageAsync(GenerateImageOptions options)
+        public async Task<IReadOnlyList<ImageTensor>> GenerateImageAsync(GenerateImageOptions options)
         {
             _isCanceled = false;
-            var response = await SendPipelineRequestAsync(new PipelineRequest(new PipelineRunOptions
+            var response = await SendPipelineTensorRequestAsync(new PipelineRequest(new PipelineRunOptions
             {
                 ImageOptions = options
             }));
-            return response.Tensors.FirstOrDefault();
+            return response.ImageTensors;
         }
 
 
@@ -340,14 +363,14 @@ namespace Amuse.Common
         /// Generates Video.
         /// </summary>
         /// <param name="options">The options.</param>
-        public async Task<Tensor<float>> GenerateVideoAsync(GenerateVideoOptions options)
+        public async Task<IReadOnlyList<VideoSequence>> GenerateVideoAsync(GenerateVideoOptions options)
         {
             _isCanceled = false;
-            var response = await SendPipelineRequestAsync(new PipelineRequest(new PipelineRunOptions
+            var response = await SendPipelineTensorRequestAsync(new PipelineRequest(new PipelineRunOptions
             {
                 VideoOptions = options
             }));
-            return response.Tensors.FirstOrDefault();
+            return response.VideoSequences;
         }
 
 
@@ -355,14 +378,14 @@ namespace Amuse.Common
         /// Generates Audio.
         /// </summary>
         /// <param name="options">The options.</param>
-        public async Task<Tensor<float>> GenerateAudioAsync(GenerateAudioOptions options)
+        public async Task<IReadOnlyList<AudioTensor>> GenerateAudioAsync(GenerateAudioOptions options)
         {
             _isCanceled = false;
-            var response = await SendPipelineRequestAsync(new PipelineRequest(new PipelineRunOptions
+            var response = await SendPipelineTensorRequestAsync(new PipelineRequest(new PipelineRunOptions
             {
                 AudioOptions = options
             }));
-            return response.Tensors.FirstOrDefault();
+            return response.AudioTensors;
         }
 
 
@@ -370,14 +393,39 @@ namespace Amuse.Common
         /// Generates Text.
         /// </summary>
         /// <param name="options">The options.</param>
-        public async Task<TextInput[]> GenerateTextAsync(GenerateTextOptions options)
+        public async Task<IReadOnlyList<TextInput>> GenerateTextAsync(GenerateTextOptions options)
         {
             _isCanceled = false;
-            var response = await SendPipelineRequestAsync(new PipelineRequest(new PipelineRunOptions
+            var response = await SendPipelineTensorRequestAsync(new PipelineRequest(new PipelineRunOptions
             {
                 TextOptions = options
             }));
             return response.TextResponse;
+        }
+
+
+        /// <summary>
+        /// Sends the pipeline request, waits and returns the response
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>PipelineResponse.</returns>
+        private async Task<PipelineResponse> SendPipelineRequest(PipelineRequest request, CancellationToken cancellationToken = default)
+        {
+            await _pipelineChannel.SendMessage(request, cancellationToken);
+            return await _pipelineChannel.ReceiveMessage<PipelineResponse>(cancellationToken);
+        }
+
+
+        /// <summary>
+        /// Sends the tensor response complete.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        private async Task SendTensorResponseComplete(CancellationToken cancellationToken = default)
+        {
+            var message = new CommandRequest(CommandRequestType.Complete);
+            await _commandChannel.SendMessage(message, cancellationToken);
+            await _commandChannel.ReceiveMessage<CommandResponse>(cancellationToken);
         }
     }
 }

@@ -7,7 +7,7 @@ using TensorStack.Common.Tensor;
 
 namespace Amuse.Common
 {
-    public sealed class PipelineProgress : IPipelineMessage
+    public sealed class PipelineProgress : ITensorMessage
     {
         public string Key { get; init; }
         public string Subkey { get; init; }

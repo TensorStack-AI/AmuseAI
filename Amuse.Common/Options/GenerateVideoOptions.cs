@@ -1,13 +1,10 @@
-﻿using Amuse.Common.Message;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using TensorStack.Common.Tensor;
-using TensorStack.Common;
 
 namespace Amuse.Common
 {
-    public sealed record GenerateVideoOptions
+    public sealed record GenerateVideoOptions : IGenerateOptions
     {
         public int Seed { get; set; }
         public string Prompt { get; set; }
@@ -53,66 +50,7 @@ namespace Amuse.Common
         [JsonIgnore]
         public List<AudioTensor> InputAudios { get; set; } = [];
 
-
-        public void PackTensors(PipelineRequest request)
-        {
-            request.ImageTensorCount = InputImages?.Count ?? 0;
-            request.ControlNetTensorCount = InputControlImages?.Count ?? 0;
-            request.AudioTensorCount = InputAudios?.Count ?? 0;
-            var totalCount = request.ImageTensorCount + request.ControlNetTensorCount + request.AudioTensorCount;
-            if (totalCount > 0)
-            {
-                var index = 0;
-                var validTensors = new Tensor<float>[totalCount];
-                if (!InputImages.IsNullOrEmpty())
-                {
-                    foreach (var tensor in InputImages)
-                        validTensors[index++] = tensor;
-                }
-
-                if (!InputControlImages.IsNullOrEmpty())
-                {
-                    foreach (var tensor in InputControlImages)
-                        validTensors[index++] = tensor;
-                }
-
-                if (!InputAudios.IsNullOrEmpty())
-                {
-                    foreach (var tensor in InputAudios)
-                        validTensors[index++] = tensor;
-                }
-                request.Tensors = validTensors;
-            }
-        }
-
-
-        public void UnpackTensors(PipelineRequest request)
-        {
-            if (request?.Tensors == null)
-                return;
-
-            if (request.ImageTensorCount > 0)
-            {
-                InputImages = request.Tensors
-                    .Take(request.ImageTensorCount)
-                    .Select(x => x.AsImageTensor())
-                    .ToList();
-            }
-            if (request.ControlNetTensorCount > 0)
-            {
-                InputControlImages = request.Tensors
-                    .Skip(request.ImageTensorCount)
-                    .Take(request.ControlNetTensorCount)
-                    .Select(x => x.AsImageTensor())
-                    .ToList();
-            }
-            if (request.AudioTensorCount > 0)
-            {
-                InputAudios = request.Tensors
-                    .Take(request.AudioTensorCount)
-                    .Select(x => x.AsAudioTensor(SampleRate))
-                    .ToList();
-            }
-        }
+        [JsonIgnore]
+        public List<VideoSequence> InputVideos { get; set; } = [];
     }
 }

@@ -21,6 +21,7 @@ namespace Amuse.App.Services
         private ModelSession<ModelConfig> _previewModelSession;
         private MediaType _mediaType;
         private PipelineType _pipelineType;
+        private BackendType _backendType;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PreviewService"/> class.
@@ -43,13 +44,13 @@ namespace Amuse.App.Services
         /// <param name="cancellationToken">The cancellation token.</param>
         public async Task LoadAsync(PipelineModel pipeline, CancellationToken cancellationToken = default)
         {
-            if (!_settings.IsDiffusionImagePreviewEnabled || pipeline.DiffusionModel == null || pipeline.GenerateModel.Backend == BackendType.StableDiffusionCpp)
+            if (!_settings.IsDiffusionImagePreviewEnabled || pipeline.DiffusionModel == null)
                 return;
 
             var timestamp = Stopwatch.GetTimestamp();
             _mediaType = pipeline.DiffusionModel.MediaType;
             _pipelineType = pipeline.DiffusionModel.Pipeline;
-          
+            _backendType = pipeline.GenerateModel.Backend;
 
             try
             {
@@ -111,6 +112,13 @@ namespace Amuse.App.Services
             var timestamp = Stopwatch.GetTimestamp();
             try
             {
+                if (_backendType == BackendType.StableDiffusionCpp)
+                {
+                    return await inputTensor
+                        .AsImageTensor()
+                        .ToImageInputAsync();
+                }
+
                 switch (_pipelineType)
                 {
                     case PipelineType.GlmImagePipeline:
@@ -166,6 +174,9 @@ namespace Amuse.App.Services
         /// <param name="device">The device.</param>
         private ModelSession<ModelConfig> CreateModelSession(DeviceModel device)
         {
+            if (_backendType == BackendType.StableDiffusionCpp)
+                return null;
+
             var previewModelPath = GetModelPath();
             if (!File.Exists(previewModelPath))
             {

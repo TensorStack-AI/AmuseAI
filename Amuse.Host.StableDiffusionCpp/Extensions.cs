@@ -45,6 +45,7 @@ namespace Amuse.Host.StableDiffusionCpp
                 // Misc
                 ForceSdxlVaeConvScale = true,
                 FlashAttn = pipelineOptions.IsFlashAttentionEnabled,
+                DiffusionFlashAttn = pipelineOptions.IsFlashAttentionEnabled,
                 LoraApplyMode = Pipeline.LoraApplyType.AtRuntime,
             };
 

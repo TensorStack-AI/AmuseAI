@@ -144,16 +144,16 @@ namespace Amuse.Host.Onnx
         {
             try
             {
-                request.RunOptions.UnpackTensors(request);
+                ReadTensorRequest(request);
                 if (_pipelineOptions.ProcessType == Common.ProcessType.AudioToText)
                 {
                     var resultTensor = await GenerateTextAsync(request.RunOptions.TextOptions, cancellationToken);
-                    await SendMessage(new PipelineResponse(resultTensor), cancellationToken);
+                    await SendTensorResponse(cancellationToken, resultTensor);
                 }
                 else if (_pipelineOptions.ProcessType == Common.ProcessType.TextToAudio)
                 {
                     var resultTensor = await GenerateAudioAsync(request.RunOptions.AudioOptions, cancellationToken);
-                    await SendMessage(new PipelineResponse(resultTensor), cancellationToken);
+                    await SendTensorResponse(cancellationToken, resultTensor);
                 }
             }
             catch (OperationCanceledException ex)
