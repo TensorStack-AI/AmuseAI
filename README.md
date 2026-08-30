@@ -66,44 +66,34 @@ Amuse is the flagship demo application for the [TensorStack SDK](https://github.
 ---
 
 ## GPU Support
-Amuse leverages `CUDA 13.0`, providing native support for the latest generation of hardware.<br /> While legacy architectures (Pascal/Maxwell) are technically supported, an RTX-enabled card is strongly recommended to utilize Tensor Cores for efficient generation speeds.
-<table>
-  <thead>
-    <tr>
-      <th>Architecture</th>
-      <th>Platform Support</th>
-      <th>GPU Models</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><b>Blackwell</b><br/>(SM_100)</td>
-      <td>Windows 10<br/>Windows 11*<br/>Server 2022</td>
-      <td>GeForce RTX 5090, 5080, 5070 Ti, 5070;<br/>RTX PRO Blackwell series</td>
-    </tr>
-    <tr>
-      <td><b>Ada Lovelace</b><br/>(SM_89)</td>
-      <td>Windows 10<br/>Windows 11*<br/>Server 2022</td>
-      <td>GeForce RTX 4090, 4080, 4070 Ti/Super, 4070, 4060 Ti, 4060;<br/>RTX 6000/5000/4000 Ada</td>
-    </tr>
-    <tr>
-      <td><b>Ampere</b><br/>(SM_86)</td>
-      <td>Windows 10<br/>Windows 11*<br/>Server 2022</td>
-      <td>GeForce RTX 3090 Ti, 3090, 3080 Ti, 3080, 3070 Ti, 3070, 3060 Ti, 3060;<br/>RTX A-series (A6000, etc.)</td>
-    </tr>
-    <tr>
-      <td><b>Turing</b><br/>(SM_75)</td>
-      <td>Windows 10<br/>Windows 11*<br/>Server 2022</td>
-      <td>GeForce RTX 2080 Ti, 2080 Super, 2070, 2060;<br/>GTX 1660 Ti, 1660 Super, 1650</td>
-    </tr>
-  </tbody>
-</table>
+Amuse provides multiple GPU backends, allowing you to choose the best option for your hardware and operating system.
 
-> Note: Minimum Driver (NVIDIA): `Version 580.65` or later is required for `CUDA 13.0` compatibility.
+### CUDA (Nvidia)
+NVIDIA GPUs can use **CUDA 13.0** for native GPU acceleration. RTX-enabled cards are strongly recommended for the best generation performance, as they provide Tensor Cores specifically designed to accelerate AI workloads. Legacy architectures such as Pascal and Maxwell may work, but are not recommended for optimal performance.
 
-> ** Windows 11 users may need to `Run As Administrator` during environment creation if there are failures.
+NVIDIA driver version `580.65` or later is required for CUDA 13.0 compatibility.
+
+
+### ROCm (AMD)
+AMD GPUs can use **ROCm 7.14.0** for native GPU acceleration. ROCm provides support for compatible Radeon and Instinct hardware, offering an alternative to CUDA for AMD-based systems. Performance and supported features may vary depending on the specific GPU architecture and operating system.
+
+AMD driver version `26.8.1` or later is required for ROCm 7.14.0 compatibility.
+
+
+### Vulkan (AMD, Nvidia, Intel)
+**Vulkan** provides a cross-vendor GPU backend that can be used on compatible hardware without requiring CUDA or ROCm. This makes it particularly useful for GPUs and systems that do not have access to a supported CUDA or ROCm environment.
+
+Vulkan support depends on the capabilities of the installed GPU and Vulkan driver, so performance and feature availability may vary between hardware and platforms.
 
 ---
+
+> **Windows 11:** Users may need to `Run As Administrator` during environment creation if environment setup fails.
+
+> **Note:** Actual GPU compatibility and performance depend on the GPU model, driver version, operating system, and backend being used.
+
+---
+
+
 
 <div align="center">
    <h1><a href="https://github.com/saddam213/AmuseAI/releases/download/v3.7.3/Amuse_v3.7.3.exe">Download Amuse v3.7.3</a></h1>
