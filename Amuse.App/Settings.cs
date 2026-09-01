@@ -1,4 +1,5 @@
 ﻿using Amuse.App.Common;
+using Amuse.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -30,7 +31,7 @@ namespace Amuse.App
         {
             Pipelines = Enum.GetValues<PipelineType>();
             DiffusionPipelines = Pipelines.Where(x => (int)x < 500).ToArray();
-            LanguagePipelines = [PipelineType.AutoTextPipeline];
+            LanguagePipelines = [PipelineType.AutoTextPipeline, PipelineType.Qwen3Pipeline, PipelineType.Gemma4Pipeline];
         }
 
         [AppDefault]

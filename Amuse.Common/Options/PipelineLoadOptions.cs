@@ -10,7 +10,7 @@ namespace Amuse.Common
         public string Template { get; set; }
         public string ModelType { get; set; }
         public string Variant { get; set; }
-        public string Pipeline { get; set; }
+        public PipelineType Pipeline { get; set; }
         public ProcessType ProcessType { get; set; }
         public string Device { get; set; }
         public int DeviceId { get; set; }

@@ -197,7 +197,7 @@ namespace Amuse.App.Runtime
                 if (imageTensors.IsNullOrEmpty())
                 {
                     if (!File.Exists(imageFileName))
-                        throw new Exception("Generated video result not found.");
+                        throw new Exception("Generated image result not found.");
 
                     return await ImageInput.CreateAsync(imageFileName);
                 }
@@ -564,7 +564,7 @@ namespace Amuse.App.Runtime
                 ModelPath = Path.GetFullPath(Settings.DirectoryDiffusion),
                 LoraAdapterPath = Path.GetFullPath(Settings.DirectoryLoraAdapter),
                 Template = model.Template,
-                Pipeline = model.Pipeline.ToString(),
+                Pipeline = model.Pipeline,
                 ModelType = model.ModelType,
                 ProcessType = Pipeline.ProcessType,
                 Device = device.DeviceCode,
@@ -596,7 +596,7 @@ namespace Amuse.App.Runtime
                 ModelPath = Path.GetFullPath(Settings.DirectoryLangaugeModel),
                 LoraAdapterPath = Path.GetFullPath(Settings.DirectoryLoraAdapter),
                 Template = model.Template,
-                Pipeline = model.Pipeline.ToString(),
+                Pipeline = model.Pipeline,
                 ModelType = model.ModelType,
                 ProcessType = Pipeline.ProcessType,
                 Device = device.DeviceCode,

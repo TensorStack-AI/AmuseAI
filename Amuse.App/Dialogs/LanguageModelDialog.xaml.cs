@@ -127,6 +127,7 @@ namespace Amuse.App.Dialogs
                 Settings.LanguageModels.Remove(_originalLanguageModel);
             }
             Settings.LanguageModels.Insert(index, LanguageModel);
+            LanguageModel.Initialize(Settings);
             return base.SaveAsync();
         }
 

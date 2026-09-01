@@ -1,4 +1,5 @@
 ﻿using Amuse.App.Common;
+using Amuse.App.Dialogs;
 using Amuse.App.Services;
 using Amuse.App.Views;
 using System;
@@ -41,6 +42,9 @@ namespace Amuse.App.Controls
         {
             LoadCommand = new AsyncRelayCommand(LoadAsync, CanLoad);
             UnloadCommand = new AsyncRelayCommand(UnloadAsync, CanUnload);
+            InstallCommand = new AsyncRelayCommand<string>(OnInstall);
+            DownloadCommand = new AsyncRelayCommand<string>(OnDownload);
+            SettingsCommand = new AsyncRelayCommand<string>(OnSettings);
             InitializeComponent();
         }
 
@@ -53,6 +57,9 @@ namespace Amuse.App.Controls
         public event EventHandler<PipelineModel> SelectionChanged;
         public AsyncRelayCommand LoadCommand { get; }
         public AsyncRelayCommand UnloadCommand { get; }
+        public AsyncRelayCommand<string> InstallCommand { get; }
+        public AsyncRelayCommand<string> DownloadCommand { get; }
+        public AsyncRelayCommand<string> SettingsCommand { get; }
         public View ViewType { get; set; }
 
         public Settings Settings
@@ -321,7 +328,7 @@ namespace Amuse.App.Controls
                     {
                         await DownloadService.QueueAsync(_selectedUpscaler);
                     }
-                    await NavigationService.NavigateAsync((int)View.Downloads);
+                    await NavigationService.NavigateAsync((int)View.Models);
                 }
                 return true;
             }
@@ -349,6 +356,53 @@ namespace Amuse.App.Controls
         private Task<bool> IsAccessGrantedAsync()
         {
             return Task.FromResult(true);
+        }
+
+
+        private async Task OnInstall(string sender)
+        {
+            if (sender.Equals("Extract"))
+            {
+                var dialog = DialogService.GetDialog<ExtractModelDialog>();
+                if (await dialog.AddAsync())
+                {
+                    SelectedExtractor = dialog.ExtractModel;
+                }
+            }
+            else if (sender.Equals("Upscale"))
+            {
+                var dialog = DialogService.GetDialog<UpscaleModelDialog>();
+                if (await dialog.AddAsync())
+                {
+                    SelectedUpscaler = dialog.UpscaleModel;
+                }
+            }
+        }
+
+
+        private async Task OnDownload(string sender)
+        {
+            if (sender.Equals("Extract"))
+            {
+                await NavigationService.NavigateAsync((int)View.Extract, new ModelViewOpenArgs(ModelCategoryType.Extract));
+            }
+            else if (sender.Equals("Upscale"))
+            {
+                await NavigationService.NavigateAsync((int)View.Upscale, new ModelViewOpenArgs(ModelCategoryType.Upscale));
+            }
+        }
+
+
+        private async Task OnSettings(string sender)
+        {
+            if (sender.Equals("Extract"))
+            {
+                await NavigationService.NavigateAsync((int)View.Extract);
+            }
+            else if (sender.Equals("Upscale"))
+            {
+                await NavigationService.NavigateAsync((int)View.Upscale);
+            }
         }
     }
 }

@@ -88,8 +88,8 @@ namespace Amuse.Host.Onnx
 
                 _pipeline = _pipelineOptions.Pipeline switch
                 {
-                    "SupertonicPipeline" => SupertonicPipeline.Create(onnxModelPath, _executionProvider),
-                    "WhisperPipeline" => WhisperPipeline.Create(_executionProvider, _executionProviderCPU, onnxModelPath, WhisperType),
+                    PipelineType.SupertonicPipeline => SupertonicPipeline.Create(onnxModelPath, _executionProvider),
+                    PipelineType.WhisperPipeline => WhisperPipeline.Create(_executionProvider, _executionProviderCPU, onnxModelPath, WhisperType),
                     _ => throw new NotImplementedException()
                 };
                 await _pipeline.LoadAsync(cancellationToken);

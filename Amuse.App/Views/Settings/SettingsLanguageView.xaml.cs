@@ -30,7 +30,7 @@ namespace Amuse.App.Views
             : base(settings, navigationService, downloadService, historyService, logger)
         {
             FilterBackends = ["Show All", .. Enum.GetNames<BackendType>()];
-            FilterStatuses = ["Show All", .. Enum.GetNames<ModelStatusType>()];
+            FilterStatuses = ["Show All", "Installed", "Unknown"];
             FilterPipelines = ["Show All", .. settings.LanguagePipelines.Select(x => x.ToString())];
             FilterMediaTypes = ["Show All", .. Enum.GetNames<MediaType>()];
             FilterBackend = FilterBackends[0];
@@ -124,6 +124,9 @@ namespace Amuse.App.Views
             return (obj) =>
             {
                 if (obj is not LanguageModel model)
+                    return false;
+
+                if (model.Status != ModelStatusType.Installed && model.Status != ModelStatusType.Unknown)
                     return false;
 
                 var isvalid = true;

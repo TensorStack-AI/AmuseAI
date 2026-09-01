@@ -1,4 +1,5 @@
 ﻿using Amuse.App.Views;
+using Amuse.Common;
 using System.Linq;
 using System.Text.Json.Serialization;
 using TensorStack.Common;
@@ -177,7 +178,7 @@ namespace Amuse.App.Common
             if (Status == ModelStatusType.Available && isValid)
                 return ModelStatusType.Installed;
             else if (Status == ModelStatusType.Installed && !isValid)
-                return ModelStatusType.Available;
+                return ModelStatusType.Unknown;
             else if (Status == ModelStatusType.Downloading || Status == ModelStatusType.DownloadQueue || Status == ModelStatusType.DownloadFailed)
                 return ModelStatusType.Available;
 

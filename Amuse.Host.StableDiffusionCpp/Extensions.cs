@@ -51,7 +51,7 @@ namespace Amuse.Host.StableDiffusionCpp
             };
 
 
-            if (pipelineOptions.Pipeline == "StableDiffusionXLPipeline")
+            if (pipelineOptions.Pipeline == PipelineType.StableDiffusionXLPipeline)
             {
                 return contextOptions with
                 {
@@ -63,7 +63,7 @@ namespace Amuse.Host.StableDiffusionCpp
                     ControlNetPath = pipelineOptions.ControlNet?.Path
                 };
             }
-            if (pipelineOptions.Pipeline == "StableDiffusion3Pipeline")
+            if (pipelineOptions.Pipeline == PipelineType.StableDiffusion3Pipeline)
             {
                 return contextOptions with
                 {
@@ -75,7 +75,7 @@ namespace Amuse.Host.StableDiffusionCpp
                     ControlNetPath = pipelineOptions.ControlNet?.Path
                 };
             }
-            if (pipelineOptions.Pipeline == "FluxPipeline")
+            if (pipelineOptions.Pipeline == PipelineType.FluxPipeline)
             {
                 return contextOptions with
                 {
@@ -86,7 +86,7 @@ namespace Amuse.Host.StableDiffusionCpp
                     ControlNetPath = pipelineOptions.ControlNet?.Path
                 };
             }
-            if (pipelineOptions.Pipeline == "ChromaPipeline")
+            if (pipelineOptions.Pipeline == PipelineType.ChromaPipeline)
             {
                 return contextOptions with
                 {
@@ -96,7 +96,7 @@ namespace Amuse.Host.StableDiffusionCpp
                     ControlNetPath = pipelineOptions.ControlNet?.Path
                 };
             }
-            if (pipelineOptions.Pipeline == "IdeogramPipeline")
+            if (pipelineOptions.Pipeline == PipelineType.IdeogramPipeline)
             {
                 return contextOptions with
                 {
@@ -107,7 +107,7 @@ namespace Amuse.Host.StableDiffusionCpp
                     ControlNetPath = pipelineOptions.ControlNet?.Path
                 };
             }
-            if (pipelineOptions.Pipeline == "LTX20Pipeline")
+            if (pipelineOptions.Pipeline == PipelineType.LTX20Pipeline)
             {
                 return contextOptions with
                 {
@@ -118,7 +118,7 @@ namespace Amuse.Host.StableDiffusionCpp
                     DiffusionModelPath = pipelineOptions.CheckpointConfig.Transformer,
                 };
             }
-            if (pipelineOptions.Pipeline == "WanPipeline")
+            if (pipelineOptions.Pipeline == PipelineType.WanPipeline)
             {
                 return contextOptions with
                 {
@@ -129,7 +129,7 @@ namespace Amuse.Host.StableDiffusionCpp
                     HighNoiseDiffusionModelPath = pipelineOptions.CheckpointConfig.Transformer2
                 };
             }
-            if (pipelineOptions.Pipeline == "MiniMaxVideoPipeline")
+            if (pipelineOptions.Pipeline == PipelineType.MiniMaxVideoPipeline)
             {
                 return contextOptions with
                 {
@@ -139,7 +139,7 @@ namespace Amuse.Host.StableDiffusionCpp
                     DiffusionModelPath = pipelineOptions.CheckpointConfig.Transformer
                 };
             }
-            if (pipelineOptions.Pipeline == "QwenImagePipeline")
+            if (pipelineOptions.Pipeline == PipelineType.QwenImagePipeline)
             {
                 return contextOptions with
                 {
@@ -150,11 +150,11 @@ namespace Amuse.Host.StableDiffusionCpp
                     ModelArgs = "qwen_image_zero_cond_t=true" // TODO: should be optional
                 };
             }
-            if (pipelineOptions.Pipeline == "AnimaPipeline"
-             || pipelineOptions.Pipeline == "ErniePipeline"
-             || pipelineOptions.Pipeline == "Flux2KleinPipeline"
-             || pipelineOptions.Pipeline == "Krea2Pipeline"
-             || pipelineOptions.Pipeline == "ZImagePipeline")
+            if (pipelineOptions.Pipeline == PipelineType.AnimaPipeline
+             || pipelineOptions.Pipeline == PipelineType.ErniePipeline
+             || pipelineOptions.Pipeline == PipelineType.Flux2KleinPipeline
+             || pipelineOptions.Pipeline == PipelineType.Krea2Pipeline
+             || pipelineOptions.Pipeline == PipelineType.ZImagePipeline)
             {
                 return contextOptions with
                 {
@@ -166,7 +166,7 @@ namespace Amuse.Host.StableDiffusionCpp
             }
 
             // Pipeline not supported
-            throw new NotImplementedException(pipelineOptions.Pipeline);
+            throw new NotImplementedException(nameof(pipelineOptions.Pipeline));
         }
 
 
@@ -546,9 +546,9 @@ namespace Amuse.Host.StableDiffusionCpp
         /// <param name="guidanceScale">The guidance scale.</param>
         /// <param name="guidanceScale2">The guidance scale2.</param>
         /// <param name="pipelineType">Type of the pipeline.</param>
-        private static float GetTextGuidance(float guidanceScale, float guidanceScale2, string pipelineType)
+        private static float GetTextGuidance(float guidanceScale, float guidanceScale2, PipelineType pipelineType)
         {
-            if (pipelineType == "WanPipeline")
+            if (pipelineType == PipelineType.WanPipeline)
                 return Math.Max(1, guidanceScale2);
             return Math.Max(1, guidanceScale);
         }
@@ -560,9 +560,9 @@ namespace Amuse.Host.StableDiffusionCpp
         /// <param name="guidanceScale">The guidance scale.</param>
         /// <param name="guidanceScale2">The guidance scale2.</param>
         /// <param name="pipelineType">Type of the pipeline.</param>
-        private static float GetDistilledGuidance(float guidanceScale, float guidanceScale2, string pipelineType)
+        private static float GetDistilledGuidance(float guidanceScale, float guidanceScale2, PipelineType pipelineType)
         {
-            if (pipelineType == "WanPipeline")
+            if (pipelineType == PipelineType.WanPipeline)
                 return Math.Max(1, guidanceScale2);
             return Math.Max(1, guidanceScale2);
         }
@@ -574,9 +574,9 @@ namespace Amuse.Host.StableDiffusionCpp
         /// <param name="guidanceScale">The guidance scale.</param>
         /// <param name="guidanceScale2">The guidance scale2.</param>
         /// <param name="pipelineType">Type of the pipeline.</param>
-        private static float GetTextGuidanceHighNoise(float guidanceScale, float guidanceScale2, string pipelineType)
+        private static float GetTextGuidanceHighNoise(float guidanceScale, float guidanceScale2, PipelineType pipelineType)
         {
-            if (pipelineType == "WanPipeline")
+            if (pipelineType == PipelineType.WanPipeline)
                 return Math.Max(1, guidanceScale);
             return Math.Max(1, guidanceScale2);
         }
@@ -588,9 +588,9 @@ namespace Amuse.Host.StableDiffusionCpp
         /// <param name="guidanceScale">The guidance scale.</param>
         /// <param name="guidanceScale2">The guidance scale2.</param>
         /// <param name="pipelineType">Type of the pipeline.</param>
-        private static float GetDistilledGuidanceHighNoise(float guidanceScale, float guidanceScale2, string pipelineType)
+        private static float GetDistilledGuidanceHighNoise(float guidanceScale, float guidanceScale2, PipelineType pipelineType)
         {
-            if (pipelineType == "WanPipeline")
+            if (pipelineType == PipelineType.WanPipeline)
                 return Math.Max(1, guidanceScale);
             return Math.Max(1, guidanceScale);
         }

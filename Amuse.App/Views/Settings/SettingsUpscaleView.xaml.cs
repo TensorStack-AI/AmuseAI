@@ -26,7 +26,7 @@ namespace Amuse.App.Views
         public SettingsUpscaleView(Settings settings, NavigationService navigationService, IModelDownloadService downloadService, IHistoryService historyService, ILogger<SettingsUpscaleView> logger)
             : base(settings, navigationService, downloadService, historyService, logger)
         {
-            FilterStatuses = ["Show All", .. Enum.GetNames<ModelStatusType>()];
+            FilterStatuses = ["Show All", "Installed", "Unknown"];
             FilterStatus = FilterStatuses[0];
             SaveCommand = new AsyncRelayCommand(SaveAsync);
             AddModelCommand = new AsyncRelayCommand(AddModelAsync);
@@ -95,6 +95,9 @@ namespace Amuse.App.Views
             return (obj) =>
             {
                 if (obj is not UpscaleModel model)
+                    return false;
+
+                if (model.Status != ModelStatusType.Installed && model.Status != ModelStatusType.Unknown)
                     return false;
 
                 var isvalid = true;

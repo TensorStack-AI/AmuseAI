@@ -100,7 +100,9 @@ AMD GPUs can use **ROCm 7.14.0** for native GPU acceleration. ROCm provides supp
 </div>
 
 
-### External Dependencies
+## Attribution & Dependencies
+
+Amuse is made possible in part by the excellent open-source projects
 - `PdfPig` https://github.com/UglyToad/PdfPig
 - `Markdig` https://github.com/xoofx/markdig
 - `Serilog` https://github.com/serilog/serilog
@@ -109,3 +111,34 @@ AMD GPUs can use **ROCm 7.14.0** for native GPU acceleration. ROCm provides supp
 - `Diffusers` https://github.com/huggingface/diffusers
 - `Transformers` https://github.com/huggingface/transformers
 - `StableDiffusion.cpp` https://github.com/leejet/stable-diffusion.cpp
+
+---
+
+## Contributors
+Want to contribute to Amuse? I'd love to hear from you!
+
+All development, source-code changes, issues, pull requests, and other contributions should be made through the main development repository:
+
+https://github.com/saddam213/TensorStack
+
+This repository is dedicated **solely to compiled release builds** of Amuse. Please use the main development repository to report issues, suggest improvements, contribute code, or get involved with the project.
+
+Thank you to everyone who contributes to Amuse and helps make the project better!
+
+---
+
+## License
+
+The compiled builds distributed in this repository are covered under the **Amuse 2.0 License**. This licensing applies to the compiled releases due to the inclusion of bundled third-party software and their respective licenses.
+
+If you compile Amuse yourself from the main development repository:
+
+https://github.com/saddam213/TensorStack
+
+the Amuse source code is licensed under the **Apache License 2.0**. When creating your own compiled builds, you are responsible for obtaining, including, and complying with the licenses of any third-party software and dependencies you choose to bundle.
+
+- **Compiled releases:** Amuse 2.0 License
+- **Amuse source code:** Apache License 2.0
+- **Self-compiled builds:** You are responsible for the licensing of bundled third-party software
+
+---

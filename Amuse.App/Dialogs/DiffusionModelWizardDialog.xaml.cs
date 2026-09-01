@@ -34,14 +34,14 @@ namespace Amuse.App.Dialogs
         {
             Settings = settings;
             PipelineOptions = new ObservableCollection<WizardItemModel>();
-            SelectedBackend = BackendType.PyTorch;
-            Backends = [BackendType.PyTorch, BackendType.StableDiffusionCpp];
+            SelectedBackend = BackendType.StableDiffusionCpp;
+            Backends = [BackendType.StableDiffusionCpp, BackendType.PyTorch];
             Errors = new ObservableCollection<string>();
             CancelCommand = new AsyncRelayCommand(CancelAsync);
             SaveCommand = new AsyncRelayCommand(SaveAsync, CanExecuteSave);
             SelectedSource = ModelSourceType.LocalFile;
             InitializeComponent();
-        }   
+        }
 
         public Settings Settings { get; }
         public AsyncRelayCommand SaveCommand { get; }

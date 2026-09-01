@@ -102,11 +102,11 @@
       "Backend": "StableDiffusionCpp",
       "Environment": "vulkan",
       "HostVersion": "Vulkan",
-      "Version": 2,
+      "Version": 4,
       "Status": "Create",
       "Variables": {},
       "Requirements": [
-        "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-827-97d2990/sd-master-97d2990-bin-win-vulkan-x64.zip"
+        "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-841-6b3edaa/sd-master-6b3edaa-bin-win-vulkan-x64.zip"
       ]
     },
     {
@@ -117,12 +117,12 @@
       "Backend": "StableDiffusionCpp",
       "Environment": "vulkan",
       "HostVersion": "Vulkan",
-      "Version": 2,
+      "Version": 4,
       "Status": "Create",
       "IsDefault": true,
       "Variables": {},
       "Requirements": [
-        "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-827-97d2990/sd-master-97d2990-bin-win-vulkan-x64.zip"
+        "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-841-6b3edaa/sd-master-6b3edaa-bin-win-vulkan-x64.zip"
       ]
     },
     {
@@ -133,12 +133,12 @@
       "Backend": "StableDiffusionCpp",
       "Environment": "vulkan",
       "HostVersion": "Vulkan",
-      "Version": 2,
+      "Version": 4,
       "Status": "Create",
       "IsDefault": true,
       "Variables": {},
       "Requirements": [
-        "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-827-97d2990/sd-master-97d2990-bin-win-vulkan-x64.zip"
+        "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-841-6b3edaa/sd-master-6b3edaa-bin-win-vulkan-x64.zip"
       ]
     },
     {
@@ -149,13 +149,13 @@
       "Backend": "StableDiffusionCpp",
       "Environment": "cuda",
       "HostVersion": "CUDA",
-      "Version": 2,
+      "Version": 4,
       "Status": "Create",
       "IsDefault": true,
       "Variables": {},
       "Requirements": [
-        "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-827-97d2990/cudart-sd-bin-win-cu12-x64.zip",
-        "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-827-97d2990/sd-master-97d2990-bin-win-cuda12-x64.zip"
+        "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-841-6b3edaa/cudart-sd-bin-win-cu12-x64.zip",
+        "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-841-6b3edaa/sd-master-6b3edaa-bin-win-cuda12-x64.zip"
       ]
     },
 
@@ -167,11 +167,11 @@
       "Backend": "StableDiffusionCpp",
       "Environment": "rocm",
       "HostVersion": "ROCM",
-      "Version": 2,
+      "Version": 4,
       "Status": "Create",
       "Variables": {},
       "Requirements": [
-        "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-827-97d2990/sd-master-97d2990-bin-win-rocm-7.14.0-x64.zip",
+        "https://github.com/leejet/stable-diffusion.cpp/releases/download/master-841-6b3edaa/sd-master-6b3edaa-bin-win-rocm-7.14.0-x64.zip",
         "https://repo.amd.com/rocm/tarball-multi-arch/therock-dist-windows-multiarch-7.14.0.tar.gz"
       ]
     }
@@ -16890,7 +16890,7 @@
       "Backend": "PyTorch",
       "Name": "Qwen 3.0 4B",
       "Template": "Qwen30_IT",
-      "Pipeline": "AutoTextPipeline",
+      "Pipeline": "Qwen3Pipeline",
       "ModelType": "Base",
       "ModelSize": 8,
       "ModelParams": 4,
@@ -16950,7 +16950,7 @@
       "Backend": "PyTorch",
       "Name": "Qwen 3.0 4B VL",
       "Template": "Qwen30_VL",
-      "Pipeline": "AutoTextPipeline",
+      "Pipeline": "Qwen3Pipeline",
       "ModelType": "Vision",
       "ModelSize": 9,
       "ModelParams": 4,
@@ -17013,7 +17013,7 @@
       "Backend": "PyTorch",
       "Name": "Qwen 3.0 8B",
       "Template": "Qwen30_IT",
-      "Pipeline": "AutoTextPipeline",
+      "Pipeline": "Qwen3Pipeline",
       "ModelType": "Base",
       "ModelSize": 17,
       "ModelParams": 8,
@@ -17076,7 +17076,7 @@
       "Backend": "PyTorch",
       "Name": "Qwen 3.0 8B VL",
       "Template": "Qwen30_VL",
-      "Pipeline": "AutoTextPipeline",
+      "Pipeline": "Qwen3Pipeline",
       "ModelType": "Vision",
       "ModelSize": 18,
       "ModelParams": 8,
@@ -17141,7 +17141,7 @@
       "Backend": "PyTorch",
       "Name": "Qwen 3.0 14B",
       "Template": "Qwen30_IT",
-      "Pipeline": "AutoTextPipeline",
+      "Pipeline": "Qwen3Pipeline",
       "ModelType": "Base",
       "ModelSize": 30,
       "ModelParams": 14,
@@ -17206,7 +17206,7 @@
       "Backend": "PyTorch",
       "Name": "Qwen 3.0 32B",
       "Template": "Qwen30_IT",
-      "Pipeline": "AutoTextPipeline",
+      "Pipeline": "Qwen3Pipeline",
       "ModelType": "Base",
       "ModelSize": 66,
       "ModelParams": 32,
@@ -17280,7 +17280,7 @@
       "Backend": "PyTorch",
       "Name": "Qwen 3.5 4B",
       "Template": "Qwen35_IT",
-      "Pipeline": "AutoTextPipeline",
+      "Pipeline": "Qwen3Pipeline",
       "ModelType": "Vision",
       "ModelSize": 10,
       "ModelParams": 4,
@@ -17342,7 +17342,7 @@
       "Backend": "PyTorch",
       "Name": "Qwen 3.5 9B",
       "Template": "Qwen35_IT",
-      "Pipeline": "AutoTextPipeline",
+      "Pipeline": "Qwen3Pipeline",
       "ModelType": "Vision",
       "ModelSize": 20,
       "ModelParams": 9,
@@ -17406,7 +17406,7 @@
       "Backend": "PyTorch",
       "Name": "Qwen 3.5 27B",
       "Template": "Qwen35_IT",
-      "Pipeline": "AutoTextPipeline",
+      "Pipeline": "Qwen3Pipeline",
       "ModelType": "Vision",
       "ModelSize": 56,
       "ModelParams": 27,
@@ -17478,7 +17478,7 @@
       "Backend": "PyTorch",
       "Name": "Qwen 3.6 27B",
       "Template": "Qwen36_IT",
-      "Pipeline": "AutoTextPipeline",
+      "Pipeline": "Qwen3Pipeline",
       "ModelType": "Vision",
       "ModelSize": 56,
       "ModelParams": 27,
@@ -17555,7 +17555,7 @@
       "Backend": "PyTorch",
       "Name": "Qwen 3.8 27B",
       "Template": "Qwen38_IT",
-      "Pipeline": "AutoTextPipeline",
+      "Pipeline": "Qwen3Pipeline",
       "ModelType": "Vision",
       "ModelSize": 56,
       "ModelParams": 27,
@@ -17634,7 +17634,7 @@
       "Backend": "PyTorch",
       "Name": "Gemma4 E2B IT",
       "Template": "Gemma4_IT",
-      "Pipeline": "AutoTextPipeline",
+      "Pipeline": "Gemma4Pipeline",
       "ModelType": "Multi",
       "ModelSize": 11,
       "ModelParams": 2,
@@ -17695,7 +17695,7 @@
       "Backend": "PyTorch",
       "Name": "Gemma4 E4B IT",
       "Template": "Gemma4_IT",
-      "Pipeline": "AutoTextPipeline",
+      "Pipeline": "Gemma4Pipeline",
       "ModelType": "Multi",
       "ModelSize": 16,
       "ModelParams": 4,
@@ -17756,7 +17756,7 @@
       "Backend": "PyTorch",
       "Name": "Gemma4 12B IT",
       "Template": "Gemma4_IT",
-      "Pipeline": "AutoTextPipeline",
+      "Pipeline": "Gemma4Pipeline",
       "ModelType": "Multi",
       "ModelSize": 24,
       "ModelParams": 12,
@@ -17816,7 +17816,7 @@
       "Backend": "PyTorch",
       "Name": "Gemma4 31B IT",
       "Template": "Gemma4_IT",
-      "Pipeline": "AutoTextPipeline",
+      "Pipeline": "Gemma4Pipeline",
       "ModelType": "Multi",
       "ModelSize": 63,
       "ModelParams": 31,

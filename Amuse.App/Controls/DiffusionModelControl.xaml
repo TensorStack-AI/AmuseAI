@@ -13,7 +13,7 @@
              xmlns:Controls="clr-namespace:Amuse.App.Controls"
              xmlns:Common="clr-namespace:Amuse.App.Common"
              xmlns:Views="clr-namespace:Amuse.App.Views">
-    <Grid  DataContext="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:DiffusionModelControl}}}">
+    <Grid DataContext="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:DiffusionModelControl}}}">
 
         <DockPanel>
 
@@ -91,12 +91,24 @@
                 <DockPanel>
                     <TextBox DockPanel.Dock="Left" Text="Model" IsReadOnly="True" IsHitTestVisible="False" Width="60" FontStyle="Italic" FontSize="11" Opacity="0.7" Padding="4,2,0,0"/>
                     <Grid Height="36">
-                        <ComboBox 
+                        <CommonControls:ContentComboBox
                             SelectedItem="{Binding SelectedModel, Mode=TwoWay}"
                             ItemsSource="{Binding ModelCollectionView}"
                             ItemTemplate="{StaticResource ComboBoxDataDiffusionTemplateModel}"
                             HorizontalContentAlignment="Stretch"
-                            SelectionChanged="Model_SelectionChanged"/>
+                            SelectionChanged="Model_SelectionChanged">
+                            <CommonControls:ContentComboBox.BottomContent>
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Height="26" Width="26" Command="{Binding SettingsCommand}" CommandParameter="Diffusion" >
+                                        <CommonControls:FontAwesome Icon="f013" Size="12"/>
+                                    </Button>
+                                    <UniformGrid Rows="1">
+                                        <Button Content="Install" Height="26" Command="{Binding InstallCommand}" CommandParameter="Diffusion"/>
+                                        <Button Content="Download" Height="26" Command="{Binding DownloadCommand}" CommandParameter="Diffusion"/>
+                                    </UniformGrid>
+                                </DockPanel>
+                            </CommonControls:ContentComboBox.BottomContent>
+                        </CommonControls:ContentComboBox>
                         <TextBlock Text="No models found." FontStyle="Italic" Opacity=".4" Margin="5,-2,0,0" VerticalAlignment="Center" IsHitTestVisible="False" Visibility="{Binding ModelCollectionView.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </Grid>
                 </DockPanel>
@@ -105,11 +117,23 @@
                 <DockPanel Visibility="{Binding IsControlNetEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TextBox DockPanel.Dock="Left" Text="Control" IsReadOnly="True" IsHitTestVisible="False" Width="60" FontStyle="Italic" FontSize="11" Opacity="0.7" Padding="4,2,0,0"/>
                     <Grid>
-                        <ComboBox 
+                        <CommonControls:ContentComboBox
                             SelectedItem="{Binding SelectedControlNet}"
                             ItemsSource="{Binding ControlNetCollectionView}"
                             ItemTemplate="{StaticResource ComboBoxDataTemplateModel}"
-                            HorizontalContentAlignment="Stretch"/>
+                            HorizontalContentAlignment="Stretch">
+                            <CommonControls:ContentComboBox.BottomContent>
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Height="26" Width="26" Command="{Binding SettingsCommand}" CommandParameter="ControlNet" >
+                                        <CommonControls:FontAwesome Icon="f013" Size="12" />
+                                    </Button>
+                                    <UniformGrid Rows="1">
+                                        <Button Content="Install" Height="26" Command="{Binding InstallCommand}" CommandParameter="ControlNet"/>
+                                        <Button Content="Download" Height="26" Command="{Binding DownloadCommand}" CommandParameter="ControlNet"/>
+                                    </UniformGrid>
+                                </DockPanel>
+                            </CommonControls:ContentComboBox.BottomContent>
+                        </CommonControls:ContentComboBox>
                         <TextBlock Text="No models found." FontStyle="Italic" Opacity=".4" Margin="5,2,0,0" IsHitTestVisible="False" Visibility="{Binding ControlNetCollectionView.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </Grid>
                 </DockPanel>
@@ -118,11 +142,23 @@
                 <DockPanel Visibility="{Binding IsExtractorEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TextBox DockPanel.Dock="Left" Text="Extractor" IsReadOnly="True" IsHitTestVisible="False" Width="60" FontStyle="Italic" FontSize="11" Opacity="0.7" Padding="4,2,0,0"/>
                     <Grid>
-                        <ComboBox 
+                        <CommonControls:ContentComboBox
                             SelectedItem="{Binding SelectedExtractor}"
                             ItemsSource="{Binding ExtractCollectionView}"
                             ItemTemplate="{StaticResource ComboBoxDataTemplateModel}"
-                            HorizontalContentAlignment="Stretch"/>
+                            HorizontalContentAlignment="Stretch">
+                            <CommonControls:ContentComboBox.BottomContent>
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Height="26" Width="26" Command="{Binding SettingsCommand}" CommandParameter="Extract" >
+                                        <CommonControls:FontAwesome Icon="f013" Size="12" />
+                                    </Button>
+                                    <UniformGrid Rows="1">
+                                        <Button Content="Install" Height="26" Command="{Binding InstallCommand}" CommandParameter="Extract"/>
+                                        <Button Content="Download" Height="26" Command="{Binding DownloadCommand}" CommandParameter="Extract"/>
+                                    </UniformGrid>
+                                </DockPanel>
+                            </CommonControls:ContentComboBox.BottomContent>
+                        </CommonControls:ContentComboBox>
                         <TextBlock Text="No models found." FontStyle="Italic" Opacity=".4" Margin="5,2,0,0" IsHitTestVisible="False" Visibility="{Binding ExtractCollectionView.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </Grid>
                 </DockPanel>
@@ -143,11 +179,23 @@
                 <DockPanel Visibility="{Binding IsUpscalerEnabled, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TextBox DockPanel.Dock="Left" Text="Upscaler" IsReadOnly="True" IsHitTestVisible="False" Width="60" FontStyle="Italic" FontSize="11" Opacity="0.7" Padding="4,2,0,0"/>
                     <Grid>
-                        <ComboBox 
+                        <CommonControls:ContentComboBox
                             SelectedItem="{Binding SelectedUpscaler}" 
                             ItemsSource="{Binding UpscaleCollectionView}" 
                             ItemTemplate="{StaticResource ComboBoxDataTemplateModel}"
-                            HorizontalContentAlignment="Stretch"/>
+                            HorizontalContentAlignment="Stretch">
+                            <CommonControls:ContentComboBox.BottomContent>
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Height="26" Width="26" Command="{Binding SettingsCommand}" CommandParameter="Upscale" >
+                                        <CommonControls:FontAwesome Icon="f013" Size="12" />
+                                    </Button>
+                                    <UniformGrid Rows="1">
+                                        <Button Content="Install" Height="26" Command="{Binding InstallCommand}" CommandParameter="Upscale"/>
+                                        <Button Content="Download" Height="26" Command="{Binding DownloadCommand}" CommandParameter="Upscale"/>
+                                    </UniformGrid>
+                                </DockPanel>
+                            </CommonControls:ContentComboBox.BottomContent>
+                        </CommonControls:ContentComboBox>
                         <TextBlock Text="No models found." FontStyle="Italic" Opacity=".4" Margin="5,2,0,0" IsHitTestVisible="False" Visibility="{Binding UpscaleCollectionView.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                     </Grid>
                 </DockPanel>

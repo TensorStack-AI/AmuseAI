@@ -12,7 +12,6 @@ namespace Amuse.App.Views
         ControlNet = 54,
         Extract = 55,
         Upscale = 56,
-        Downloads = 57,
         Component = 58,
         Language = 59,
 
@@ -44,7 +43,8 @@ namespace Amuse.App.Views
         ImageToText = 410,
 
         Recent = 1000,
-        Gallery = 1001
+        Gallery = 1001,
+        Models = 1002
     }
 
     public enum ViewCategory
@@ -75,6 +75,7 @@ namespace Amuse.App.Views
         {
             // General
             { View.Gallery, ViewCategory.Other  },
+            { View.Models, ViewCategory.Other  },
 
             // Settings
             { View.General, ViewCategory.Settings  },
@@ -84,7 +85,6 @@ namespace Amuse.App.Views
             { View.ControlNet, ViewCategory.Settings  },
             { View.Extract , ViewCategory.Settings  },
             { View.Upscale , ViewCategory.Settings  },
-            { View.Downloads , ViewCategory.Settings  },
             { View.Component , ViewCategory.Settings  },
             { View.Language , ViewCategory.Settings  },
 

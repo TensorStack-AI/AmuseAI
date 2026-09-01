@@ -63,7 +63,6 @@
                                     </StackPanel>
                                     <StackPanel>
                                         <TextBlock Text="{Binding Status}" TextAlignment="Right" Opacity=".7" FontSize="11"/>
-                                        <TextBlock Text="{Binding Backend}" TextAlignment="Right" Opacity=".7" FontSize="11"/>
                                     </StackPanel>
                                 </DockPanel>
                             </DockPanel>
@@ -73,7 +72,7 @@
             </DockPanel>
 
             <DockPanel Grid.Column="1" Margin="10,0,0,0">
-                <DockPanel DockPanel.Dock="Top">
+                <DockPanel DockPanel.Dock="Top" Visibility="{Binding SelectedModel, Converter={StaticResource NullVisibilityConverter}}">
 
                     <!--Actions-->
                     <DockPanel DockPanel.Dock="Right" >

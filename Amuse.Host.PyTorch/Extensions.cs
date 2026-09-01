@@ -52,7 +52,7 @@ namespace Amuse.Host.PyTorch
                 IsOptimizeChannelsEnabled = options.IsOptimizeChannelsEnabled,
 
                 MemoryMode = options.MemoryMode.Cast<Amuse.Common.MemoryModeType, TensorStack.Python.Common.MemoryModeType>(),
-                Pipeline = options.Pipeline,
+                Pipeline = PipelineType.AutoTextPipeline.ToString(),
                 ProcessType = options.ProcessType.Cast<Amuse.Common.ProcessType, TensorStack.Python.Common.ProcessType>(),
                 QuantType = options.QuantType.Cast<Amuse.Common.QuantizationType, TensorStack.Python.Common.QuantizationType>(),
                 Variant = options.Variant,

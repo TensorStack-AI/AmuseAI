@@ -9,6 +9,136 @@ namespace Amuse.Common
         StableDiffusionCpp = 20
     }
 
+    public enum PipelineType
+    {
+        // Image
+        [Display(Name = "Stable-Diffusion Pipeline", ShortName = "SD", Description = "The original Stable Diffusion family, widely supported and highly customizable. Known for its large ecosystem of checkpoints, LoRAs, ControlNets, and community tooling, making it a versatile choice for general image generation and fine-tuned workflows.")]
+        StableDiffusionPipeline = 0,
+
+        [Display(Name = "Stable-Diffusion XL Pipeline", ShortName = "SDXL", Description = "A major evolution of Stable Diffusion with a larger architecture and improved text understanding, composition, and visual detail. Particularly well suited to high-resolution generation, realistic imagery, and complex prompts.")]
+        StableDiffusionXLPipeline = 1,
+
+        [Display(Name = "Stable-Diffusion 3 Pipeline", ShortName = "SD3", Description = "A newer Stable Diffusion architecture focused on stronger prompt comprehension, improved typography and text rendering, and better handling of complex compositions. Uses a substantially different architecture from earlier Stable Diffusion generations.")]
+        StableDiffusion3Pipeline = 2,
+
+        [Display(Name = "Latent Consistency Pipeline", ShortName = "LCM", Description = "Latent Consistency Models are designed to generate images in very few sampling steps rather than the many steps traditionally used by diffusion models. They prioritize speed and interactive generation while retaining reasonable image quality.")]
+        LatentConsistencyPipeline = 3,
+
+        [Display(Name = "FLUX.1 Pipeline", ShortName = "FLUX.1", Description = "The FLUX.1 family uses a large flow-based architecture designed for strong visual quality, prompt adherence, and complex scene composition. It is particularly notable for its ability to follow detailed prompts and produce more convincing text and typography than many earlier diffusion models.")]
+        FluxPipeline = 20,
+
+        [Display(Name = "FLUX.2 Pipeline", ShortName = "FLUX.2", Description = "The next generation of the FLUX family, targeting higher-quality image synthesis, improved instruction following, and stronger control over complex visual compositions. Designed for demanding image-generation workflows where semantic accuracy and visual fidelity are important.")]
+        Flux2Pipeline = 21,
+
+        [Display(Name = "FLUX.2 Klein Pipeline", ShortName = "FLUX.2", Description = "A compact FLUX.2 variant designed to make the capabilities of the FLUX family more accessible with substantially lower computational requirements. Best suited to applications where generation speed, memory usage, and local inference efficiency are important.")]
+        Flux2KleinPipeline = 22,
+
+        [Display(Name = "Chroma Pipeline", ShortName = "Chroma", Description = "Chroma is a Flux-derived text-to-image model focused on improving prompt understanding, image quality, and detailed visual composition.")]
+        ChromaPipeline = 30,
+
+        [Display(Name = "Z-Image Pipeline", ShortName = "Z-Image", Description = "Z-Image is Alibaba's efficient image-generation model built around a Scalable Single-Stream DiT architecture. It combines strong visual quality, prompt adherence, aesthetic diversity, and controllability, with Z-Image-Turbo providing an aggressively distilled 8-step variant optimized for very fast photorealistic generation and English/Chinese text rendering.")]
+        ZImagePipeline = 40,
+
+        [Display(Name = "Qwen Image Pipeline", ShortName = "Qwen", Description = "Qwen's image-generation family, with particular emphasis on instruction following, complex compositions, and text rendering. It is well suited to tasks where the model needs to understand detailed natural-language instructions rather than simply reproduce a visual style.")]
+        QwenImagePipeline = 50,
+
+        [Display(Name = "Ideogram4 Pipeline", ShortName = "Ideogram4", Description = "A model family particularly strong at generating images containing readable, correctly structured text. Well suited to posters, advertisements, logos, typography-heavy designs, and other graphic-design-oriented generations where text accuracy matters.")]
+        IdeogramPipeline = 61,
+
+        [Display(Name = "Anima Pipeline", ShortName = "Anima", Description = "Anima is a 2B-parameter image-generation model specialized in anime, illustration, characters, and other non-photorealistic artwork. It is trained primarily on anime and artistic imagery, providing strong style adherence and diversity, with Base, Aesthetic, and Turbo variants targeting flexibility, quality, and fast generation respectively.")]
+        AnimaPipeline = 62,
+
+        [Display(Name = "Ernie Pipeline", ShortName = "Ernie", Description = "Baidu's ERNIE-based image-generation models, built around strong multimodal understanding and natural-language instruction following. Designed to translate complex semantic descriptions into coherent visual compositions.")]
+        ErniePipeline = 63,
+
+        [Display(Name = "GLM-Image Pipeline", ShortName = "GLM-Image", Description = "Hybrid autoregressive and diffusion image-generation model with strong semantic understanding, accurate text rendering, fine-grained detail generation, and support for image editing, style transfer, identity preservation, and multi-subject consistency")]
+        GlmImagePipeline = 64,
+
+        [Display(Name = "Krea2 Pipeline", ShortName = "Krea2", Description = "Krea's image-generation model family, oriented toward aesthetically strong, modern image generation. Designed with creative workflows in mind, particularly polished compositions, photorealistic imagery, and visually appealing outputs.")]
+        Krea2Pipeline = 65,
+
+        [Display(Name = "JoyAI Pipeline", ShortName = "JoyAI", Description = "JoyAI-Image is a unified multimodal model combining an 8B multimodal language model with a 16B multimodal diffusion transformer. Its key strengths are spatial understanding, long-form text rendering, multi-view generation, and instruction-guided image editing, allowing generation and editing to be driven by detailed spatial instructions.")]
+        JoyImagePipeline = 66,
+
+        [Display(Name = "PRX-Pixel Pipeline", ShortName = "PRX-Pixel", Description = "PRX-Pixel is a ~7B pixel-space text-to-image foundation model that generates directly in pixel space without a VAE. Built with a Qwen3-VL text encoder and trained from scratch using x-prediction, it explores direct pixel generation with strong multilingual prompting while avoiding the compressed latent representation used by conventional diffusion models.")]
+        PrxPixelPipeline = 67,
+
+        [Display(Name = "Kandinsky5 Image Pipeline", ShortName = "Kandinsky5", Description = "The fifth generation of the Kandinsky family, designed for high-quality text-to-image generation with strong semantic understanding and detailed visual synthesis. Intended as a general-purpose model for both artistic and realistic image generation.")]
+        Kandinsky5ImagePipeline = 68,
+
+
+        // Video
+        [Display(Name = "Wan Pipeline", ShortName = "Wan", Description = "A general-purpose video-generation family designed for high-quality text-to-video and image-to-video synthesis. Known for strong visual quality, relatively coherent motion, and broad applicability across cinematic and creative video-generation tasks.")]
+        WanPipeline = 70,
+
+        [Display(Name = "LTX Pipeline", ShortName = "LTX", Description = "A video-generation architecture optimized heavily for speed and efficiency. Its ability to generate video with relatively low latency makes it particularly useful for interactive workflows, rapid experimentation, and local inference.")]
+        LTXPipeline = 80,
+
+        [Display(Name = "LTX-2 Pipeline", ShortName = "LTX-2", Description = "The next generation of LTX, extending the original architecture with improved video quality, motion, temporal consistency, and multimodal generation capabilities. Designed to provide significantly stronger results while retaining the efficiency that distinguishes the LTX family.")]
+        LTX20Pipeline = 81,
+
+        [Display(Name = "CogVideoX Pipeline", ShortName = "CogVideoX", Description = "An open video-generation model family designed for text-to-video and image-to-video generation. It focuses on maintaining temporal consistency between frames while producing meaningful motion and preserving the semantic content of the prompt.")]
+        CogVideoXPipeline = 90,
+
+        [Display(Name = "Kandinsky5 Video Pipeline", ShortName = "Kandinsky5", Description = "A video-oriented extension of the Kandinsky family, combining the model family's visual synthesis capabilities with temporal generation. Designed for coherent video creation with detailed scenes and stylized visual output.")]
+        Kandinsky5VideoPipeline = 91,
+
+        [Display(Name = "SkyReels v2 Pipeline", ShortName = "SkyReels", Description = "A video-generation family focused on cinematic and high-quality visual generation. Designed for more sophisticated scene composition, character motion, camera movement, and temporal consistency across generated sequences.")]
+        SkyReelsV2Pipeline = 100,
+
+        [Display(Name = "Helios Pipeline", ShortName = "Helios", Description = "Helios is a 14B autoregressive diffusion model designed for real-time, minute-scale video generation. It natively supports text-to-video, image-to-video, and video-to-video generation, using compressed historical context and efficient sampling to achieve high throughput while maintaining temporal consistency over long sequences.")]
+        HeliosPipeline = 110,
+
+        [Display(Name = "Motif Video Pipeline", ShortName = "Motif", Description = "Motif-Video 2B is a 2B-parameter text-to-video and image-to-video diffusion transformer designed to achieve competitive video quality with a fraction of the training compute and model size of larger video models. Its architecture separates prompt alignment, temporal consistency, and fine-detail recovery to reduce objective interference during generation.")]
+        MotifVideoPipeline = 111,
+
+        [Display(Name = "AnyFlow Pipeline", ShortName = "AnyFlow", Description = "AnyFlow is an any-step video diffusion framework based on flow maps that allows a single model to operate across arbitrary inference step counts rather than being locked to a fixed distilled step budget. It supports text-to-video, image-to-video, and video-to-video generation while improving quality progressively as additional sampling steps are used.")]
+        AnyFlowPipeline = 112,
+
+        [Display(Name = "MiniMax Video Pipeline", ShortName = "MiniMax", Description = "MiniMax's video-generation models are designed for high-quality text-to-video and image-to-video generation, with particular emphasis on realistic motion, detailed scenes, and cinematic output. Suitable for longer-form creative video generation.")]
+        MiniMaxVideoPipeline = 113,
+
+
+        // Audio
+        [Display(Name = "AceStep Pipeline", ShortName = "AceStep", Description = "An open music-generation model designed for controllable music synthesis from natural-language descriptions. Supports structured musical generation and is particularly useful for generating songs, instrumental pieces, and genre-specific compositions.")]
+        AceStepPipeline = 200,
+
+        [Display(Name = "LongCat Audio Pipeline", ShortName = "LongCat", Description = "A generative audio model designed for producing rich audio content from textual and multimodal instructions. Intended for more general audio-generation workflows beyond simple speech synthesis.")]
+        LongCatAudioPipeline = 210,
+
+        [Display(Name = "MiniMax Audio Pipeline", ShortName = "MiniMax", Description = "MiniMax's audio-generation models cover expressive generative audio and music tasks, with an emphasis on high-quality output and natural musical structure. Suitable for creating music and other complex audio content from prompts.")]
+        MiniMaxAudioPipeline = 213,
+
+
+        // Other
+        [Display(Name = "Upscale Pipeline", ShortName = "Upscale", Description = "General-purpose image upscaling pipeline designed to increase resolution and enhance visual detail while preserving the original image content.")]
+        UpscalePipeline = 500,
+
+        [Display(Name = "Extract Pipeline", ShortName = "Extract", Description = "General-purpose feature extraction pipeline for extracting useful representations, embeddings, metadata, or other features from supported inputs.")]
+        ExtractPipeline = 501,
+
+        [Display(Name = "Whisper Pipeline", ShortName = "Whisper", Description = "OpenAI's Whisper family is designed for robust automatic speech recognition across languages, accents, and noisy recording conditions. It can transcribe spoken audio into text and is particularly useful for multilingual transcription and speech-to-text workflows.")]
+        WhisperPipeline = 502,
+
+        [Display(Name = "Supertonic Pipeline", ShortName = "Supertonic", Description = "A lightweight text-to-speech model designed to convert text into natural-sounding speech efficiently. Focuses on practical local inference while providing expressive synthesized voices without requiring a large cloud-based speech service.")]
+        SupertonicPipeline = 503,
+
+
+        // Text
+        [Display(Name = "AutoText Pipeline", ShortName = "AutoText", Description = "A general-purpose text-processing pipeline that automatically selects or orchestrates the appropriate text-generation capabilities for a requested operation. Intended as a higher-level abstraction for applications that should not need to know which underlying language model performs the task.")]
+        AutoTextPipeline = 600,
+
+        [Display(Name = "Qwen3 Pipeline", ShortName = "Qwen3", Description = "Qwen3 is Alibaba's next-generation open-weight language model family, designed for strong reasoning, instruction following, coding, multilingual understanding, and general-purpose text generation. It supports both efficient everyday tasks and more complex reasoning workflows, making it suitable for conversational AI, analysis, coding, and agentic applications.")]
+        Qwen3Pipeline = 601,
+
+        [Display(Name = "Gemma4 Pipeline", ShortName = "Gemma4", Description = "Gemma 4 is Google's latest open model family designed for efficient, high-quality text and multimodal generation. It provides strong instruction following, reasoning, coding, and general-purpose language capabilities while offering model sizes suitable for both local and resource-constrained inference.")]
+        Gemma4Pipeline = 610,
+
+
+        // Deprecated
+        Kandinsky5Pipeline = 60,
+    }
+
     public enum ProcessType
     {
         // Image
@@ -24,10 +154,10 @@ namespace Amuse.Common
         [Display(Name = "ImageInpaint", ShortName = "INP", Description = "Modifies or restores specific, masked areas within an image while preserving the surrounding context.")]
         ImageInpaint = 3,
 
-        [Display(Name = "ImageControlNet", ShortName = "CN", Description = "Applies rigid spatial conditioning (like edge maps, poses, or depth) onto a text-to-image generation process.")]
+        [Display(Name = "ControlNet Image", ShortName = "CN", Description = "Applies rigid spatial conditioning (like edge maps, poses, or depth) onto a text-to-image generation process.")]
         ImageControlNet = 4,
 
-        [Display(Name = "ImageToImageControlNet", ShortName = "I2I+CN", Description = "Combines a source image with an explicit spatial guide map to tightly control composition and style concurrently.")]
+        [Display(Name = "ControlNet ImageToImage", ShortName = "I2I+CN", Description = "Combines a source image with an explicit spatial guide map to tightly control composition and style concurrently.")]
         ImageToImageControlNet = 5,
 
 

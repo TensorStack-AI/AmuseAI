@@ -2,6 +2,7 @@
 // Licensed under the Apache 2.0 License.
 using Amuse.App.Common;
 using Amuse.App.Views;
+using Amuse.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -57,13 +58,20 @@ namespace Amuse.App.Dialogs
             set { SetProperty(ref _selectedTrigger, value); }
         }
 
-        public Task<bool> AddAsync()
+        public async Task<bool> AddAsync()
+        {
+            await AddAsync(Settings.DiffusionPipelines.First());
+            return await base.ShowDialogAsync();
+        }
+
+
+        public Task<bool> AddAsync(PipelineType pipelineType)
         {
             var modelId = Settings.LoraAdapterModels.NextId();
             LoraModel = new LoraAdapterModel
             {
                 Id = modelId,
-                Pipeline = Settings.DiffusionPipelines.First(),
+                Pipeline = pipelineType,
                 Name = "New Lora",
                 Checkpoint = new CheckpointComponent
                 {
@@ -138,6 +146,7 @@ namespace Amuse.App.Dialogs
             LoraModel.Key = CreateKey();
             LoraModel.Triggers = Trigger.Count == 0 ? default : Trigger.ToArray();
             Settings.LoraAdapterModels.Insert(index, LoraModel);
+            LoraModel.Initialize(Settings);
             return base.SaveAsync();
         }
 

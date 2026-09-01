@@ -102,6 +102,18 @@
                 </ObjectDataProvider.MethodParameters>
             </ObjectDataProvider>
 
+            <ObjectDataProvider x:Key="ModelCategoryType" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
+                <ObjectDataProvider.MethodParameters>
+                    <x:Type TypeName="Common:ModelCategoryType"/>
+                </ObjectDataProvider.MethodParameters>
+            </ObjectDataProvider>
+
+            <ObjectDataProvider x:Key="PipelineType" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
+                <ObjectDataProvider.MethodParameters>
+                    <x:Type TypeName="AmuseCommon:PipelineType"/>
+                </ObjectDataProvider.MethodParameters>
+            </ObjectDataProvider>
+
             <ObjectDataProvider x:Key="QuantizationType" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
                 <ObjectDataProvider.MethodParameters>
                     <x:Type TypeName="AmuseCommon:QuantizationType"/>
@@ -1303,6 +1315,30 @@
                 <Setter Property="Margin" Value="0"/>
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="BorderBrush" Value="{StaticResource ControlBrightDefaultBorderBrush }" />
+                <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                            <Border Name="Border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}">
+                                <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="{TemplateBinding Padding}" />
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger  Property="IsSelected" Value="True" >
+                        <Setter Property="Background" Value="{StaticResource ControlMouseOverBackground}" />
+                        <Setter Property="BorderBrush" Value="{StaticResource AccentColour2}" />
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+
+            <Style x:Key="ModelListBoxItem" TargetType="{x:Type ListBoxItem}">
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Margin" Value="2"/>
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="BorderBrush" Value="{StaticResource ControlBrightDefaultBorderBrush}" />
                 <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
                 <Setter Property="Template">
                     <Setter.Value>

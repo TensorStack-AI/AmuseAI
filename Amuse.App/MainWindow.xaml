@@ -128,6 +128,15 @@
                         CommandParameter="{x:Static Views:View.Gallery}" 
                         IsSelected="{Binding View, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Gallery}">
                     </CommonControls:IconButton>
+                    <CommonControls:IconButton 
+                        Text="Models" 
+                        Icon="f5fd" 
+                        IconMargin="0,-2,0,0"
+                        Style="{StaticResource MenuIconButton}"
+                        Command="{Binding NavigateCommand}" 
+                        CommandParameter="{x:Static Views:View.Models}" 
+                        IsSelected="{Binding View, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Models}">
+                    </CommonControls:IconButton>
                 </UniformGrid>
 
             </DockPanel>
@@ -305,22 +314,6 @@
                                 Command="{Binding NavigateCommand}" 
                                 CommandParameter="{x:Static Views:View.Component}" 
                                 IsSelected="{Binding View, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Component}">
-                            </CommonControls:IconButton>
-                            <CommonControls:IconButton 
-                                Text="Downloads" 
-                                Icon="f57d"
-                                IconSize="18"
-                                FontSize="14"
-                                FontWeight="SemiBold"
-                                Orientation="Horizontal"
-                                Alignment="Left"
-                                Placement="Right"
-                                TextOpacity=".8"
-                                IconMargin="20,0,6,0"
-                                IconColor="{StaticResource AccentColour2}"
-                                Command="{Binding NavigateCommand}" 
-                                CommandParameter="{x:Static Views:View.Downloads}" 
-                                IsSelected="{Binding View, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Downloads}">
                             </CommonControls:IconButton>
                         </UniformGrid>
 

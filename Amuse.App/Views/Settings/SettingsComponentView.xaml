@@ -57,7 +57,7 @@
             </DockPanel>
 
             <DockPanel Grid.Column="1" Margin="10,0,0,0">
-                <DockPanel DockPanel.Dock="Top">
+                <DockPanel DockPanel.Dock="Top" Visibility="{Binding SelectedModel, Converter={StaticResource NullVisibilityConverter}}">
 
                     <!--Actions-->
                     <DockPanel DockPanel.Dock="Right"  >

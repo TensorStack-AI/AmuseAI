@@ -1,0 +1,647 @@
+﻿<Views:ViewBase x:Class="Amuse.App.Views.ModelsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:local="clr-namespace:Amuse.App.Views"
+    xmlns:CommonControls="clr-namespace:TensorStack.WPF.Controls;assembly=TensorStack.WPF"
+    xmlns:Controls="clr-namespace:Amuse.App.Controls"
+    xmlns:Common="clr-namespace:Amuse.App.Common"
+    xmlns:Views="clr-namespace:Amuse.App.Views">
+    <Views:ViewBase.Resources>
+        <Style x:Key="StatusIcon" TargetType="{x:Type CommonControls:FontAwesome}" >
+            <Setter Property="Opacity" Value=".6"/>
+            <Setter Property="Color" Value="{StaticResource DefaultForeground}"/>
+            <Setter Property="ToolTip" Value="Model Not Installed"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}"  Value="Installed">
+                    <Setter Property="Color" Value="{StaticResource SuccessColour}"/>
+                    <Setter Property="ToolTip" Value="Model Installed"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Available">
+                    <Setter Property="Opacity" Value=".2"/>
+                    <Setter Property="Color" Value="{StaticResource DefaultForeground}"/>
+                    <Setter Property="ToolTip" Value="Available For Download"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Unknown">
+                    <Setter Property="Color" Value="{StaticResource WarningColour}"/>
+                    <Setter Property="ToolTip" Value="Model Update Required"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="DownloadQueue">
+                    <Setter Property="Color" Value="{StaticResource WarningColour}"/>
+                    <Setter Property="ToolTip" Value="Model Download Queued..."/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="Downloading">
+                    <Setter Property="Color" Value="{StaticResource InfoColour}"/>
+                    <Setter Property="ToolTip" Value="Model Downloading..."/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="DownloadFailed">
+                    <Setter Property="Color" Value="{StaticResource DangerColour}"/>
+                    <Setter Property="ToolTip" Value="Model Download Failed"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Views:ViewBase.Resources>
+    <Grid DataContext="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:ModelsView}}}" >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="1*" MinWidth="360"/>
+        </Grid.ColumnDefinitions>
+
+        <!--Collection-->
+
+        <DockPanel Grid.Column="0"  Margin="10,10,5,10">
+
+            <!--Top Panel-->
+            <Border DockPanel.Dock="Top" BorderBrush="{StaticResource DefaultBorderColor}" BorderThickness="1" Padding="4,0,4,4" >
+                <DockPanel>
+
+                    <StackPanel DockPanel.Dock="Right">
+                        <TextBlock Text="" Style="{StaticResource FieldTextBlockStyle}"/>
+                        <CommonControls:IconButton Icon="f00d" IconColor="{StaticResource DangerColour}"  Command="{Binding RemoveFiltersCommand}" Width="22" Height="22"/>
+                    </StackPanel>
+                    <UniformGrid DockPanel.Dock="Right" Rows="1" Width="780">
+                        <StackPanel>
+                            <TextBlock Text="Model Type" Style="{StaticResource FieldTextBlockStyle}"/>
+                            <CommonControls:NullableComboBox ItemsSource="{Binding Source={StaticResource ModelCategoryType}}" SelectedItem="{Binding FilterCategoryType}" NullPrefix="All Models"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Media Type" Style="{StaticResource FieldTextBlockStyle}"/>
+                            <CommonControls:NullableComboBox ItemsSource="{Binding Source={StaticResource MediaType}}" SelectedItem="{Binding FilterMediaType}" NullPrefix="All Media" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Pipeline Type" Style="{StaticResource FieldTextBlockStyle}"/>
+                            <ComboBox ItemsSource="{Binding FilterPipelines}" SelectedItem="{Binding FilterPipeline}" />
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock Text="Backend Type" Style="{StaticResource FieldTextBlockStyle}"/>
+                            <CommonControls:NullableComboBox ItemsSource="{Binding Source={StaticResource BackendType}}" SelectedItem="{Binding FilterBackendType}" NullPrefix="All Backends"/>
+                        </StackPanel>
+
+                    </UniformGrid>
+                    <StackPanel>
+                        <TextBlock Text="Search" Style="{StaticResource FieldTextBlockStyle}"/>
+                        <TextBox Text="{Binding FilterText, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <!--Bottom Panel-->
+            <Border DockPanel.Dock="Bottom" BorderBrush="{StaticResource DefaultBorderColor}" BorderThickness="1" Padding="4,0,4,0" >
+                <DockPanel Height="30">
+                    <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="Items: " />
+                        <TextBlock Text="{Binding ModelCollection.Count}" />
+                        <TextBlock Text=" / " />
+                        <TextBlock Text="{Binding ModelCollection.SourceCollection.Count}" />
+                    </StackPanel>
+                    <StackPanel DockPanel.Dock="Right" VerticalAlignment="Center">
+                        <StackPanel>
+                            <CheckBox Content="Show Installed" IsChecked="{Binding FilterInstalled}" Margin="0,0,0,0" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <TextBlock />
+                </DockPanel>
+            </Border>
+
+            <!--Middle-->
+            <Border BorderBrush="{StaticResource DefaultBorderColor}" BorderThickness="1" Margin="0,4">
+                <ScrollViewer PanningMode="VerticalOnly" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"  >
+                    <Grid>
+                        <ListBox x:Name="ListBoxControl" 
+                                Padding="0"
+                                VerticalAlignment="Top"
+                                BorderThickness="1"
+                                Background="{StaticResource TransparentBrush}"
+                                ScrollViewer.VerticalScrollBarVisibility="Disabled" 
+                                ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                IsSynchronizedWithCurrentItem="True"
+                                ItemsSource="{Binding ModelCollection}" 
+                                VirtualizingPanel.IsVirtualizing="True"
+                                VirtualizingPanel.VirtualizationMode="Recycling"
+                                SelectedItem="{Binding SelectedItem, Mode=OneWayToSource}"
+                                ItemContainerStyle="{StaticResource ModelListBoxItem}">
+
+                            <!--DataTemplates-->
+                            <ListBox.Resources>
+
+                                <!--DiffusionModel-->
+                                <DataTemplate DataType="{x:Type Common:DiffusionModel}">
+                                    <Grid>
+                                        <DockPanel Height="80">
+                                            <Grid DockPanel.Dock="Left" Width="80" Height="80" Margin="4,0,0,0" Opacity=".2">
+                                                <Grid Visibility="{Binding MediaType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Image}">
+                                                    <CommonControls:FontAwesome Icon="f03e" IconStyle="SharpLight" Size="80" Color="{StaticResource DefaultForeground}"  />
+                                                </Grid>
+                                                <Grid Visibility="{Binding MediaType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Video}">
+                                                    <CommonControls:FontAwesome Icon="f008" IconStyle="SharpLight" Size="80" Color="{StaticResource DefaultForeground}" />
+                                                </Grid>
+                                                <Grid Visibility="{Binding MediaType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Audio}">
+                                                    <CommonControls:FontAwesome Icon="f001" IconStyle="SharpRegular" Size="76" Color="{StaticResource DefaultForeground}" Margin="0,4,0,0" />
+                                                </Grid>
+                                            </Grid>
+                                            <TextBlock DockPanel.Dock="Bottom" Text="{Binding Name}" FontSize="13" FontWeight="DemiBold" TextWrapping="Wrap" Margin="4,0,0,10"/>
+                                            <StackPanel Margin="4,6,0,0" Opacity=".7">
+                                                <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumShortNameConverter}}"/>
+                                                <TextBlock Text="{Binding Backend}" Margin="0,-2,0,0"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                        <CommonControls:FontAwesome Style="{StaticResource StatusIcon}" Tag="{Binding Status}" Icon="f0ed" IconStyle="Solid" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,8,0" />
+                                    </Grid>
+
+                                </DataTemplate>
+
+                                <!--LanguageModel-->
+                                <DataTemplate DataType="{x:Type Common:LanguageModel}">
+                                    <Grid>
+                                        <DockPanel Height="80">
+                                            <Grid DockPanel.Dock="Left" Width="80" Height="80" Margin="4,0,0,0" >
+                                                <Grid Visibility="{Binding MediaType, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Text}" >
+                                                    <CommonControls:FontAwesome Icon="f893" IconStyle="SharpSolid" Size="80" Color="{StaticResource DefaultForeground}" Opacity=".2" />
+                                                </Grid>
+                                            </Grid>
+                                            <TextBlock DockPanel.Dock="Bottom" Text="{Binding Name}" FontSize="13" FontWeight="DemiBold" TextWrapping="Wrap" Margin="4,0,0,10"/>
+                                            <StackPanel Margin="4,6,0,0" Opacity=".7">
+                                                <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumShortNameConverter}}"/>
+                                                <TextBlock Text="{Binding Backend}" Margin="0,-2,0,0"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                        <CommonControls:FontAwesome Style="{StaticResource StatusIcon}" Tag="{Binding Status}" Icon="f0ed" IconStyle="Solid" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,8,0" />
+                                    </Grid>
+                                </DataTemplate>
+
+                                <!--LoraAdapterModel-->
+                                <DataTemplate DataType="{x:Type Common:LoraAdapterModel}">
+                                    <Grid>
+                                        <DockPanel Height="80">
+                                            <Grid DockPanel.Dock="Left" Width="80" Height="80" Margin="4,0,0,0">
+                                                <CommonControls:FontAwesome Icon="f1e0" IconStyle="SharpLight" Size="70" Color="{StaticResource DefaultForeground}" Opacity=".2" />
+                                            </Grid>
+                                            <TextBlock DockPanel.Dock="Bottom" Text="{Binding Name}" FontSize="13" FontWeight="DemiBold" TextWrapping="Wrap" Margin="4,0,0,10"/>
+                                            <StackPanel Margin="4,6,0,0" Opacity=".7">
+                                                <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumShortNameConverter}}"/>
+                                                <TextBlock Text="Lora Adapter" Margin="0,-2,0,0"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                        <CommonControls:FontAwesome Style="{StaticResource StatusIcon}" Tag="{Binding Status}" Icon="f0ed" IconStyle="Solid" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,8,0" />
+                                    </Grid>
+                                </DataTemplate>
+
+                                <!--ControlNetModel-->
+                                <DataTemplate DataType="{x:Type Common:ControlNetModel}">
+                                    <Grid>
+                                        <DockPanel Height="80">
+                                            <Grid DockPanel.Dock="Left" Width="80" Height="80" Margin="4,0,0,0">
+                                                <CommonControls:FontAwesome Icon="f78a" IconStyle="SharpLight" Size="60" Color="{StaticResource DefaultForeground}" Opacity=".2" />
+                                            </Grid>
+                                            <TextBlock DockPanel.Dock="Bottom" Text="{Binding Name}" FontSize="13" FontWeight="DemiBold" TextWrapping="Wrap" Margin="4,0,0,10" />
+                                            <StackPanel Margin="4,6,0,0" Opacity=".7">
+                                                <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumShortNameConverter}}"/>
+                                                <TextBlock Text="Control-Net" Margin="0,-2,0,0"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                        <CommonControls:FontAwesome Style="{StaticResource StatusIcon}" Tag="{Binding Status}" Icon="f0ed" IconStyle="Solid" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,8,0" />
+                                    </Grid>
+                                </DataTemplate>
+
+                                <!--UpscaleModel-->
+                                <DataTemplate DataType="{x:Type Common:UpscaleModel}">
+                                    <Grid>
+                                        <DockPanel Height="80">
+                                            <Grid DockPanel.Dock="Left" Width="80" Height="80" Margin="4,0,0,0">
+                                                <CommonControls:FontAwesome Icon="f424" IconStyle="SharpLight" Size="68" Color="{StaticResource DefaultForeground}" Opacity=".2" />
+                                            </Grid>
+                                            <TextBlock DockPanel.Dock="Bottom" Text="{Binding Name}" FontSize="13" FontWeight="DemiBold" TextWrapping="Wrap" Margin="4,0,0,10"/>
+                                            <StackPanel Margin="4,6,0,0" Opacity=".7">
+                                                <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumShortNameConverter}}"/>
+                                                <TextBlock Text="{Binding Backend}" Margin="0,-2,0,0"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                        <CommonControls:FontAwesome Style="{StaticResource StatusIcon}" Tag="{Binding Status}" Icon="f0ed" IconStyle="Solid" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,8,0" />
+                                    </Grid>
+                                </DataTemplate>
+
+                                <!--ExtractModel-->
+                                <DataTemplate DataType="{x:Type Common:ExtractModel}">
+                                    <Grid>
+                                        <DockPanel Height="80">
+                                            <Grid DockPanel.Dock="Left" Width="80" Height="80" Margin="4,0,0,0">
+                                                <CommonControls:FontAwesome Icon="f302" IconStyle="SharpLight" Size="68" Color="{StaticResource DefaultForeground}" Opacity=".2" />
+                                            </Grid>
+                                            <TextBlock DockPanel.Dock="Bottom" Text="{Binding Name}" FontSize="13" FontWeight="DemiBold" TextWrapping="Wrap" Margin="4,0,0,10"/>
+                                            <StackPanel Margin="4,6,0,0" Opacity=".7">
+                                                <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumShortNameConverter}}"/>
+                                                <TextBlock Text="{Binding Backend}" Margin="0,-2,0,0"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                        <CommonControls:FontAwesome Style="{StaticResource StatusIcon}" Tag="{Binding Status}" Icon="f0ed" IconStyle="Solid" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,8,0" />
+                                    </Grid>
+                                </DataTemplate>
+
+                                <!--ComponentModel-->
+                                <DataTemplate DataType="{x:Type Common:ComponentModel}">
+                                    <Grid>
+                                        <DockPanel Height="80">
+                                            <Grid DockPanel.Dock="Left" Width="80" Height="80" Margin="4,0,0,0">
+                                                <CommonControls:FontAwesome Icon="e479" IconStyle="SharpLight" Size="78" Color="{StaticResource DefaultForeground}" Opacity=".2" />
+                                            </Grid>
+                                            <TextBlock DockPanel.Dock="Bottom" Text="{Binding Name}" FontSize="13" FontWeight="DemiBold" TextWrapping="Wrap" Margin="4,0,0,10"/>
+                                            <StackPanel Margin="4,6,0,0" Opacity=".7">
+                                                <TextBlock Text="{Binding Checkpoint.Folder}"/>
+                                                <TextBlock Text="Component" Margin="0,-2,0,0"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                        <CommonControls:FontAwesome Style="{StaticResource StatusIcon}" Tag="{Binding Status}" Icon="f0ed" IconStyle="Solid" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,8,8,0" />
+                                    </Grid>
+                                </DataTemplate>
+
+                            </ListBox.Resources>
+
+
+                            <!--ItemsPanel-->
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <CommonControls:UniformWrapPanel  IsItemsHost="True" SnapsToDevicePixels="True" VerticalAlignment="Top" >
+                                        <CommonControls:UniformWrapPanel.Style>
+                                            <Style TargetType="{x:Type CommonControls:UniformWrapPanel}" >
+                                                <Setter Property="MinItemWidth" Value="240"/>
+                                                <Setter Property="MaxItemWidth" Value="300"/>
+                                            </Style>
+                                        </CommonControls:UniformWrapPanel.Style>
+                                    </CommonControls:UniformWrapPanel>
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+
+                        </ListBox>
+
+                        <Grid Visibility="{Binding ModelCollection.Count, Converter={StaticResource LessOrEqualThanToVisibilityConverter}, ConverterParameter=0}">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock Text="No Items Found." FontSize="18" Opacity="0.6"/>
+                            </StackPanel>
+                        </Grid>
+
+                    </Grid>
+                </ScrollViewer>
+            </Border>
+        </DockPanel>
+
+        <!--GridSplitter-->
+        <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Width="5" Opacity=".4" Margin="0,20" />
+
+        <!--Information-->
+        <DockPanel Grid.Column="2" Margin="5, 10, 10, 10">
+
+            <!--SelectedItem-->
+            <Border DockPanel.Dock="Top" BorderBrush="{StaticResource DefaultBorderColor}" BorderThickness="1" >
+                <DockPanel Height="360" Margin="0,6,0,0">
+
+                    <DockPanel DockPanel.Dock="Bottom"  Margin="6" >
+                        <DockPanel DockPanel.Dock="Top" Margin="10,0,-20,0" Visibility="{Binding SelectedItem.MemoryProfile, Converter={StaticResource NullVisibilityConverter}, FallbackValue=Collapsed}">
+                            <UniformGrid DockPanel.Dock="Top" Columns="4">
+                                <TextBlock Text="Quality" Style="{StaticResource FieldTextBlockStyle}" />
+                                <TextBlock Text="Low" Style="{StaticResource FieldTextBlockStyle}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Medium" Style="{StaticResource FieldTextBlockStyle}" HorizontalAlignment="Center"/>
+                                <TextBlock Text="High" Style="{StaticResource FieldTextBlockStyle}" HorizontalAlignment="Center"/>
+                            </UniformGrid>
+                            <Border DockPanel.Dock="Top" BorderThickness="0,1,0,0" BorderBrush="{StaticResource DefaultForeground}" Opacity=".2" Margin="0,0,26,0"/>
+                            <ItemsControl ItemsSource="{Binding SelectedItem.MemoryProfile}" Opacity=".9">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <UniformGrid Columns="4" Visibility="{Binding QualityMode, Converter={StaticResource InverseEnumToVisibilityConverter}, ConverterParameter=Draft}">
+                                            <TextBlock Text="{Binding QualityMode}" />
+                                            <TextBlock Text="{Binding MemoryModes[0], StringFormat={}{0}GB}" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding MemoryModes[1], StringFormat={}{0}GB}" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="{Binding MemoryModes[2], StringFormat={}{0}GB}" HorizontalAlignment="Center"/>
+                                        </UniformGrid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </DockPanel>
+                        <UniformGrid Rows="1" Height="32" Margin="0,6,0,0">
+                            <Grid>
+                                <CommonControls:IconButton Text="Download" FontSize="13" Icon="f0ed" IconSize="16" IconStyle="Light" IconColor="{StaticResource AccentColour2}" Command="{Binding DownloadCommand}" Visibility="{Binding SelectedItem.Status, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Available}"/>
+                                <CommonControls:IconButton Text="Update" FontSize="13" Icon="f0ed" IconSize="16" IconStyle="Light" IconColor="{StaticResource WarningColour}" Command="{Binding DownloadCommand}" Visibility="{Binding SelectedItem.Status, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Unknown}"/>
+                            </Grid>
+                            <CommonControls:IconButton Text="Information" FontSize="13" Icon="f05a" IconSize="16" IconStyle="Light"  IconColor="{StaticResource InfoColour}" Command="{Binding DownloadInformationCommand}" />
+                        </UniformGrid>
+                    </DockPanel>
+
+                    <!--DataTemplate-->
+                    <Grid >
+                        <ContentControl Content="{Binding SelectedItem}" Foreground="{StaticResource DefaultForeground}" >
+                            <ContentControl.Resources>
+
+                                <!--DiffusionModel-->
+                                <DataTemplate DataType="{x:Type Common:DiffusionModel}">
+                                    <DockPanel>
+                                        <Grid DockPanel.Dock="Bottom" Margin="16,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="54"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="74"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition/>
+                                                <RowDefinition/>
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Type:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Status:" />
+                                            <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Backend:" />
+                                            <TextBlock Grid.Row="1" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Access:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ModelType}" />
+                                            <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding Status}" />
+                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Backend}" />
+                                            <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
+                                        </Grid>
+
+                                        <StackPanel Margin="6,2">
+                                            <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumDisplayNameConverter}}" FontSize="15"  TextAlignment="Center" Opacity=".7" />
+                                            <TextBlock Text="{Binding Name}" FontSize="23" FontWeight="DemiBold" TextAlignment="Center" Margin="0,-2,0,2" TextWrapping="Wrap"/>
+                                            <ItemsControl ItemsSource="{Binding ProcessTypes}" HorizontalAlignment="Center">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Background="{StaticResource AccentColour1}" CornerRadius="2" Margin="2" >
+                                                            <TextBlock Text="{Binding ., Converter={StaticResource EnumDisplayNameConverter}}" Foreground="White" Margin="6,2" Opacity=".9"/>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                            <CommonControls:HyperlinkControl Link="{Binding Link}" Label="{Binding Link}" Foreground="DeepSkyBlue" HorizontalAlignment="Center" Opacity=".9" Margin="0,2,0,0"/>
+                                            <Border BorderBrush="{StaticResource DefaultForeground}" BorderThickness="0,2,0,0" Margin="0,10" Opacity=".2"/>
+                                            <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumDescriptionConverter}}" TextWrapping="Wrap" Opacity=".9"/>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </DataTemplate>
+
+                                <!--LanguageModel-->
+                                <DataTemplate DataType="{x:Type Common:LanguageModel}">
+                                    <DockPanel>
+
+                                        <Grid DockPanel.Dock="Bottom" Margin="16,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="54"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="74"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition/>
+                                                <RowDefinition/>
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Type:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Status:" />
+                                            <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Backend:" />
+                                            <TextBlock Grid.Row="1" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Access:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ModelType}" />
+                                            <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding Status}" />
+                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Backend}" />
+                                            <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
+                                        </Grid>
+
+                                        <StackPanel Margin="6,2">
+                                            <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumDisplayNameConverter}}" FontSize="15"  TextAlignment="Center" Opacity=".7" />
+                                            <TextBlock Text="{Binding Name}" FontSize="23" FontWeight="DemiBold" TextAlignment="Center" Margin="0,-2,0,2" TextWrapping="Wrap"/>
+                                            <ItemsControl ItemsSource="{Binding ProcessTypes}" HorizontalAlignment="Center">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Background="{StaticResource AccentColour1}" CornerRadius="2" Margin="2" >
+                                                            <TextBlock Text="{Binding ., Converter={StaticResource EnumDisplayNameConverter}}" Foreground="White" Margin="6,2" Opacity=".9"/>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                            <CommonControls:HyperlinkControl Link="{Binding Link}" Label="{Binding Link}" Foreground="DeepSkyBlue" HorizontalAlignment="Center" Opacity=".9" Margin="0,2,0,0"/>
+                                            <Border BorderBrush="{StaticResource DefaultForeground}" BorderThickness="0,2,0,0" Margin="0,10" Opacity=".2"/>
+                                            <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumDescriptionConverter}}" TextWrapping="Wrap" Opacity=".9"/>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </DataTemplate>
+
+                                <!--LoraAdapterModel-->
+                                <DataTemplate DataType="{x:Type Common:LoraAdapterModel}">
+                                    <DockPanel>
+                                        <StackPanel Margin="6,2">
+                                            <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumDisplayNameConverter}}" FontSize="15"  TextAlignment="Center" Opacity=".7" />
+                                            <TextBlock Text="{Binding Name}" FontSize="23" FontWeight="DemiBold" TextAlignment="Center" Margin="0,-2,0,2" TextWrapping="Wrap"/>
+                                            <ItemsControl ItemsSource="{Binding ViewFilter}" HorizontalAlignment="Center">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Background="{StaticResource AccentColour1}" CornerRadius="2" Margin="2" >
+                                                            <TextBlock Text="{Binding ., Converter={StaticResource EnumDisplayNameConverter}}" Foreground="White" Margin="6,2" Opacity=".9"/>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                            <CommonControls:HyperlinkControl Link="{Binding Link}" Label="{Binding Link}" Foreground="DeepSkyBlue" HorizontalAlignment="Center" Opacity=".9" Margin="0,2,0,0"/>
+                                            <Border BorderBrush="{StaticResource DefaultForeground}" BorderThickness="0,2,0,0" Margin="0,10" Opacity=".2"/>
+                                            <Grid Margin="0,10,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition/>
+                                                    <RowDefinition/>
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Status:" />
+                                                <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="AccessToken:" />
+                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Status}" />
+                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </DataTemplate>
+
+                                <!--ControlNetModel-->
+                                <DataTemplate DataType="{x:Type Common:ControlNetModel}">
+                                    <DockPanel>
+                                        <StackPanel Margin="6,2">
+                                            <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumDisplayNameConverter}}" FontSize="15"  TextAlignment="Center" Opacity=".7" />
+                                            <TextBlock Text="{Binding Name}" FontSize="23" FontWeight="DemiBold" TextAlignment="Center" Margin="0,-2,0,2" TextWrapping="Wrap"/>
+                                            <ItemsControl ItemsSource="{Binding ViewFilter}" HorizontalAlignment="Center">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Background="{StaticResource AccentColour1}" CornerRadius="2" Margin="2" >
+                                                            <TextBlock Text="{Binding ., Converter={StaticResource EnumDisplayNameConverter}}" Foreground="White" Margin="6,2" Opacity=".9"/>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <WrapPanel Orientation="Horizontal"/>
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                            </ItemsControl>
+                                            <CommonControls:HyperlinkControl Link="{Binding Link}" Label="{Binding Link}" Foreground="DeepSkyBlue" HorizontalAlignment="Center" Opacity=".9" Margin="0,2,0,0"/>
+                                            <Border BorderBrush="{StaticResource DefaultForeground}" BorderThickness="0,2,0,0" Margin="0,10" Opacity=".2"/>
+                                            <Grid Margin="0,10,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition/>
+                                                    <RowDefinition/>
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Status:" />
+                                                <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="AccessToken:" />
+                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Status}" />
+                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </DataTemplate>
+
+                                <!--UpscaleModel-->
+                                <DataTemplate DataType="{x:Type Common:UpscaleModel}">
+                                    <DockPanel>
+                                        <StackPanel Margin="6,2">
+                                            <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumDisplayNameConverter}}" FontSize="15"  TextAlignment="Center" Opacity=".7" />
+                                            <TextBlock Text="{Binding Name}" FontSize="23" FontWeight="DemiBold" TextAlignment="Center" Margin="0,-2,0,2" TextWrapping="Wrap"/>
+                                            <CommonControls:HyperlinkControl Link="{Binding Link}" Label="{Binding Link}" Foreground="DeepSkyBlue" HorizontalAlignment="Center" Opacity=".9" Margin="0,2,0,0"/>
+                                            <Border BorderBrush="{StaticResource DefaultForeground}" BorderThickness="0,2,0,0" Margin="0,10" Opacity=".2"/>
+                                            <Grid Margin="0,10,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition/>
+                                                    <RowDefinition/>
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Status:" />
+                                                <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="AccessToken:" />
+                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Status}" />
+                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </DataTemplate>
+
+                                <!--ExtractModel-->
+                                <DataTemplate DataType="{x:Type Common:ExtractModel}">
+                                    <DockPanel>
+                                        <StackPanel Margin="6,2">
+                                            <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumDisplayNameConverter}}" FontSize="15"  TextAlignment="Center" Opacity=".7" />
+                                            <TextBlock Text="{Binding Name}" FontSize="23" FontWeight="DemiBold" TextAlignment="Center" Margin="0,-2,0,2" TextWrapping="Wrap"/>
+                                            <CommonControls:HyperlinkControl Link="{Binding Link}" Label="{Binding Link}" Foreground="DeepSkyBlue" HorizontalAlignment="Center" Opacity=".9" Margin="0,2,0,0"/>
+                                            <Border BorderBrush="{StaticResource DefaultForeground}" BorderThickness="0,2,0,0" Margin="0,10" Opacity=".2"/>
+                                            <Grid Margin="0,10,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition/>
+                                                    <RowDefinition/>
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Status:" />
+                                                <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="AccessToken:" />
+                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Status}" />
+                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </DataTemplate>
+
+                                <!--ComponentModel-->
+                                <DataTemplate DataType="{x:Type Common:ComponentModel}">
+                                    <DockPanel>
+                                        <StackPanel Margin="6,2">
+                                            <TextBlock Text="{Binding Checkpoint.Folder}" FontSize="15"  TextAlignment="Center" Opacity=".7" />
+                                            <TextBlock Text="{Binding Name}" FontSize="23" FontWeight="DemiBold" TextAlignment="Center" Margin="0,-2,0,2" TextWrapping="Wrap"/>
+                                            <CommonControls:HyperlinkControl Link="{Binding Link}" Label="{Binding Link}" Foreground="DeepSkyBlue" HorizontalAlignment="Center" Opacity=".9" Margin="0,2,0,0"/>
+                                            <Border BorderBrush="{StaticResource DefaultForeground}" BorderThickness="0,2,0,0" Margin="0,10" Opacity=".2"/>
+                                            <Grid Margin="0,10,0,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="80"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition/>
+                                                    <RowDefinition/>
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Status:" />
+                                                <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="AccessToken:" />
+                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Status}" />
+                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </DataTemplate>
+
+                            </ContentControl.Resources>
+                        </ContentControl>
+                    </Grid>
+                </DockPanel>
+            </Border>
+
+            <!--Downloads-->
+            <DockPanel Margin="0,6,0,0">
+                <DockPanel DockPanel.Dock="Top">
+                    <TextBlock DockPanel.Dock="Bottom" Text="Active Downloads" Style="{StaticResource FieldTextBlockStyle}" Margin="3,0,0,0"/>
+                </DockPanel>
+                <StackPanel DockPanel.Dock="Bottom">
+                    <UniformGrid  Columns="2" Height="32">
+                        <Grid>
+                            <CommonControls:IconButton Text="Cancel" FontSize="13" Icon="f05e" IconStyle="Light" IconColor="{StaticResource DangerColour}" Command="{Binding DownloadCancelCommand}" />
+                            <CommonControls:IconButton Text="Retry" FontSize="13" Icon="f01e" IconStyle="Light" IconColor="{StaticResource WarningColour}" Command="{Binding DownloadRetryCommand}" Visibility="{Binding SelectedDownload.Status, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=DownloadFailed, FallbackValue=Collapsed}"/>
+                        </Grid>
+                        <CommonControls:IconButton Text="Cancel All" FontSize="13" Icon="f05e" IconStyle="Light" IconColor="{StaticResource DangerColour}" Command="{Binding DownloadCancelAllCommand}" />
+                    </UniformGrid>
+                </StackPanel>
+                <ListBox ItemsSource="{Binding DownloadCollection}" SelectedItem="{Binding SelectedDownload}" ItemContainerStyle="{StaticResource SettingsListBoxItem}" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <DockPanel Margin="4">
+                                <StackPanel DockPanel.Dock="Bottom"  >
+                                    <CommonControls:ProgressElement Progress="{Binding TotalProgress}" Height="8"/>
+                                    <TextBlock Text="{Binding ErrorMessage}" FontSize="10" FontStyle="Italic" Opacity=".8" TextWrapping="Wrap" Foreground="{StaticResource DangerColour}" Margin="0,2,0,0" Visibility="{Binding ErrorMessage, FallbackValue=Collapsed, Converter={StaticResource NullVisibilityConverter}}"/>
+                                </StackPanel>
+                                <DockPanel>
+                                    <StackPanel DockPanel.Dock="Right">
+                                        <Grid Margin="0,0,2,2">
+                                            <TextBlock Text="Queued" TextAlignment="Right"  Opacity=".7" FontSize="11" Visibility="{Binding Status, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=DownloadQueue}"/>
+                                            <TextBlock Text="Downloading" TextAlignment="Right"  Opacity=".7" FontSize="11" Visibility="{Binding Status, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Downloading}"/>
+                                            <TextBlock Text="Failed" TextAlignment="Right"  Opacity=".7" FontSize="11" Visibility="{Binding Status, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=DownloadFailed}"/>
+                                        </Grid>
+                                        <StackPanel Margin="0,0,2,2" Visibility="{Binding Status, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Downloading}">
+                                            <TextBlock Opacity=".7" FontSize="11" HorizontalAlignment="Right">
+                                                    <Run Text="{Binding Remaining}" />
+                                                    <Run Text="@" />
+                                                    <Run Text="{Binding Speed, StringFormat={}{0:N2} MB/s}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Name}" FontSize="12" Margin="3,0,0,0" FontWeight="Medium" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding Description}"  Margin="3,0,0,0" Opacity=".7" FontSize="11"/>
+                                    </StackPanel>
+                                </DockPanel>
+                            </DockPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+
+        </DockPanel>
+    </Grid>
+</Views:ViewBase>

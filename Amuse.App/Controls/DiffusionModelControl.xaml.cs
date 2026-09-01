@@ -1,4 +1,5 @@
 ﻿using Amuse.App.Common;
+using Amuse.App.Dialogs;
 using Amuse.App.Services;
 using Amuse.App.Views;
 using Amuse.Common;
@@ -78,6 +79,9 @@ namespace Amuse.App.Controls
             ];
             LoadCommand = new AsyncRelayCommand(LoadAsync, CanLoad);
             UnloadCommand = new AsyncRelayCommand(UnloadAsync, CanUnload);
+            InstallCommand = new AsyncRelayCommand<string>(OnInstall);
+            DownloadCommand = new AsyncRelayCommand<string>(OnDownload);
+            SettingsCommand = new AsyncRelayCommand<string>(OnSettings);
             LoraAdapters = new ObservableCollection<LoraAdapterModel>();
             LoraAdapters.CollectionChanged += (s, e) => ValidateSelection();
             InitializeComponent();
@@ -93,6 +97,9 @@ namespace Amuse.App.Controls
         public View ViewType { get; set; }
         public AsyncRelayCommand LoadCommand { get; }
         public AsyncRelayCommand UnloadCommand { get; }
+        public AsyncRelayCommand<string> InstallCommand { get; }
+        public AsyncRelayCommand<string> DownloadCommand { get; }
+        public AsyncRelayCommand<string> SettingsCommand { get; }
         public MemoryProfileModel[] MemoryModes { get; }
         public ObservableCollection<LoraAdapterModel> LoraAdapters { get; set; }
 
@@ -422,6 +429,9 @@ namespace Amuse.App.Controls
                 if (obj is not DiffusionModel viewModel)
                     return false;
 
+                if (viewModel.Status == ModelStatusType.Available)
+                    return false;
+
                 if (_selectedDevice is null)
                     return false;
 
@@ -451,6 +461,9 @@ namespace Amuse.App.Controls
                 if (obj is not LoraAdapterModel viewModel)
                     return false;
 
+                if (viewModel.Status == ModelStatusType.Available)
+                    return false;
+
                 if (_selectedModel is null)
                     return false;
 
@@ -475,6 +488,9 @@ namespace Amuse.App.Controls
             ControlNetCollectionView.Filter = (obj) =>
             {
                 if (obj is not ControlNetModel viewModel)
+                    return false;
+
+                if (viewModel.Status == ModelStatusType.Available)
                     return false;
 
                 if (_selectedModel is null)
@@ -504,6 +520,9 @@ namespace Amuse.App.Controls
                 if (obj is not ExtractModel viewModel)
                     return false;
 
+                if (viewModel.Status == ModelStatusType.Available)
+                    return false;
+
                 if (_selectedModel is null)
                     return false;
 
@@ -522,6 +541,9 @@ namespace Amuse.App.Controls
             UpscaleCollectionView.Filter = (obj) =>
             {
                 if (obj is not UpscaleModel viewModel)
+                    return false;
+
+                if (viewModel.Status == ModelStatusType.Available)
                     return false;
 
                 if (_selectedModel is null)
@@ -776,7 +798,7 @@ namespace Amuse.App.Controls
                         if (!await DownloadService.QueueAsync(_selectedModel))
                             return true;
                     }
-                    await NavigationService.NavigateAsync((int)View.Downloads);
+                    await NavigationService.NavigateAsync((int)View.Models);
                 }
                 return true;
             }
@@ -824,5 +846,99 @@ namespace Amuse.App.Controls
             return _processType;
         }
 
+
+        private async Task OnInstall(string sender)
+        {
+            if (sender.Equals("Diffusion"))
+            {
+                var dialog = DialogService.GetDialog<DiffusionModelWizardDialog>();
+                if (await dialog.ShowDialogAsync())
+                {
+                    SelectedModel = dialog.SelectedTemplate;
+                }
+            }
+            else if (sender.Equals("ControlNet"))
+            {
+                var dialog = DialogService.GetDialog<ControlNetModelDialog>();
+                if (await dialog.AddAsync(_selectedModel.Pipeline))
+                {
+                    SelectedControlNet = dialog.ControlNetModel;
+                }
+            }
+            else if (sender.Equals("LoraAdapter"))
+            {
+                var dialog = DialogService.GetDialog<LoraModelDialog>();
+                if (await dialog.AddAsync(_selectedModel.Pipeline))
+                {
+                    LoraCollectionView?.Refresh();
+                }
+            }
+            else if (sender.Equals("Extract"))
+            {
+                var dialog = DialogService.GetDialog<ExtractModelDialog>();
+                if (await dialog.AddAsync())
+                {
+                    SelectedExtractor = dialog.ExtractModel;
+                }
+            }
+            else if (sender.Equals("Upscale"))
+            {
+                var dialog = DialogService.GetDialog<UpscaleModelDialog>();
+                if (await dialog.AddAsync())
+                {
+                    SelectedUpscaler = dialog.UpscaleModel;
+                }
+            }
+        }
+
+
+        private async Task OnDownload(string sender)
+        {
+            if (sender.Equals("Diffusion"))
+            {
+                await NavigationService.NavigateAsync((int)View.Models, new ModelViewOpenArgs(ModelCategoryType.Diffusion));
+            }
+            else if (sender.Equals("ControlNet"))
+            {
+                await NavigationService.NavigateAsync((int)View.Models, new ModelViewOpenArgs(ModelCategoryType.ControlNet, _selectedModel.Pipeline));
+            }
+            else if (sender.Equals("LoraAdapter"))
+            {
+                await NavigationService.NavigateAsync((int)View.Models, new ModelViewOpenArgs(ModelCategoryType.LoraAdapter, _selectedModel.Pipeline));
+            }
+            else if (sender.Equals("Extract"))
+            {
+                await NavigationService.NavigateAsync((int)View.Models, new ModelViewOpenArgs(ModelCategoryType.Extract));
+            }
+            else if (sender.Equals("Upscale"))
+            {
+                await NavigationService.NavigateAsync((int)View.Models, new ModelViewOpenArgs(ModelCategoryType.Upscale));
+            }
+        }
+
+
+        private async Task OnSettings(string sender)
+        {
+            if (sender.Equals("Diffusion"))
+            {
+                await NavigationService.NavigateAsync((int)View.Diffusion);
+            }
+            else if (sender.Equals("ControlNet"))
+            {
+                await NavigationService.NavigateAsync((int)View.ControlNet);
+            }
+            else if (sender.Equals("LoraAdapter"))
+            {
+                await NavigationService.NavigateAsync((int)View.LoraAdapter);
+            }
+            else if (sender.Equals("Extract"))
+            {
+                await NavigationService.NavigateAsync((int)View.Extract);
+            }
+            else if (sender.Equals("Upscale"))
+            {
+                await NavigationService.NavigateAsync((int)View.Upscale);
+            }
+        }
     }
 }

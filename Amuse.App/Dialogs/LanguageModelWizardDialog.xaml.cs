@@ -34,6 +34,7 @@ namespace Amuse.App.Dialogs
             Settings = settings;
             PipelineOptions = new ObservableCollection<WizardItemModel>();
             SelectedBackend = BackendType.PyTorch;
+            Backends = [ BackendType.PyTorch];
             Errors = new ObservableCollection<string>();
             CancelCommand = new AsyncRelayCommand(CancelAsync);
             SaveCommand = new AsyncRelayCommand(SaveAsync, CanExecuteSave);
@@ -48,6 +49,7 @@ namespace Amuse.App.Dialogs
         public ObservableCollection<string> Errors { get; }
         public ModelSourceType[] ModelSources { get; }
         public ObservableCollection<WizardItemModel> PipelineOptions { get; }
+        public BackendType[] Backends { get; }
 
         public BackendType SelectedBackend
         {

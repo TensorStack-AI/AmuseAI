@@ -12,7 +12,10 @@
              xmlns:CommonConverters="clr-namespace:TensorStack.WPF.Converters;assembly=TensorStack.WPF"
              xmlns:Controls="clr-namespace:Amuse.App.Controls"
              xmlns:Common="clr-namespace:Amuse.App.Common"
-             xmlns:Views="clr-namespace:Amuse.App.Views">
+             xmlns:Views="clr-namespace:Amuse.App.Views" >
+    <CommonControls:BaseControl.Resources>
+        <CommonControls:BindingProxy x:Key="ParentContext" Data="{Binding}" />
+    </CommonControls:BaseControl.Resources>
     <Grid DataContext="{Binding RelativeSource={RelativeSource AncestorType={x:Type local:LoraAdapterControl}}}">
 
         <!--Dummy View-->
@@ -23,7 +26,19 @@
                 </Button>
             </Grid>
             <Grid>
-                <ComboBox ItemTemplate="{StaticResource ComboBoxDataTemplateModel}" HorizontalContentAlignment="Stretch"/>
+                <CommonControls:ContentComboBox x:Name="comboboxEmpty" ItemTemplate="{StaticResource ComboBoxDataTemplateModel}" HorizontalContentAlignment="Stretch">
+                    <CommonControls:ContentComboBox.BottomContent>
+                        <DockPanel>
+                            <Button DockPanel.Dock="Right" Height="26" Width="26" Command="{Binding Data.SettingsCommand, Source={StaticResource ParentContext}}" CommandParameter="LoraAdapter" >
+                                <CommonControls:FontAwesome Icon="f013" Size="12" />
+                            </Button>
+                            <UniformGrid Rows="1">
+                                <Button Content="Install" Height="26" Command="{Binding Data.InstallCommand, Source={StaticResource ParentContext}}" CommandParameter="LoraAdapter"/>
+                                <Button Content="Download" Height="26" Command="{Binding Data.DownloadCommand, Source={StaticResource ParentContext}}" CommandParameter="LoraAdapter"/>
+                            </UniformGrid>
+                        </DockPanel>
+                    </CommonControls:ContentComboBox.BottomContent>
+                </CommonControls:ContentComboBox>
                 <Grid IsHitTestVisible="False">
                     <TextBlock Text="No models found." FontStyle="Italic" Opacity=".4" Margin="5,2,0,0" />
                 </Grid>
@@ -63,14 +78,26 @@
 
                         <!--Lora Collection-->
                         <Grid>
-                            <ComboBox x:Name="ComboBoxLora"
+                            <CommonControls:ContentComboBox x:Name="ComboBoxLora"
                                 Tag="{Binding RelativeSource={RelativeSource AncestorType=ContentPresenter}, Path=(ItemsControl.AlternationIndex)}"
                                 SelectedItem="{Binding ., Mode=TwoWay}"
                                 ItemsSource="{Binding LoraCollectionView, RelativeSource={RelativeSource AncestorType={x:Type local:LoraAdapterControl}}}"
                                 ItemTemplate="{StaticResource ComboBoxDataTemplateModel}"
                                 HorizontalContentAlignment="Stretch"
                                 IsSynchronizedWithCurrentItem="False"
-                                SelectionChanged="ComboBoxLora_SelectionChanged"/>
+                                SelectionChanged="ComboBoxLora_SelectionChanged">
+                                <CommonControls:ContentComboBox.BottomContent>
+                                    <DockPanel>
+                                        <Button DockPanel.Dock="Right" Height="26" Width="26" Command="{Binding Data.SettingsCommand, Source={StaticResource ParentContext}}" CommandParameter="LoraAdapter" >
+                                            <CommonControls:FontAwesome Icon="f013" Size="12" />
+                                        </Button>
+                                        <UniformGrid Rows="1">
+                                            <Button Content="Install" Height="26" Command="{Binding Data.InstallCommand, Source={StaticResource ParentContext}}" CommandParameter="LoraAdapter"/>
+                                            <Button Content="Download" Height="26" Command="{Binding Data.DownloadCommand, Source={StaticResource ParentContext}}" CommandParameter="LoraAdapter"/>
+                                        </UniformGrid>
+                                    </DockPanel>
+                                </CommonControls:ContentComboBox.BottomContent>
+                            </CommonControls:ContentComboBox>
                             <Grid IsHitTestVisible="False" Margin="5,2,0,0" Opacity=".4" Visibility="{Binding SelectedItem, ElementName=ComboBoxLora, Converter={StaticResource InverseNullVisibilityConverter}}">
                                 <TextBlock Text="No models found." FontStyle="Italic" Visibility="{Binding IsVisible, ElementName=ButtonAdd, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                 <TextBlock Text="Please Select Lora..." FontStyle="Italic" Visibility="{Binding IsVisible, ElementName=ButtonAdd, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>

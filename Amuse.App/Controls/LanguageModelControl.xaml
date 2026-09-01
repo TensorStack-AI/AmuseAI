@@ -89,12 +89,24 @@
                 <DockPanel>
                     <TextBox DockPanel.Dock="Left" Text="Model" IsReadOnly="True" IsHitTestVisible="False" Width="60" FontStyle="Italic" FontSize="11" Opacity="0.7" Padding="4,2,0,0"/>
                     <Grid Height="36">
-                        <ComboBox 
+                        <CommonControls:ContentComboBox 
                             SelectedItem="{Binding SelectedModel, Mode=TwoWay}"
                             ItemsSource="{Binding ModelCollectionView}"
                             ItemTemplate="{StaticResource ComboBoxDataDiffusionTemplateModel}"
                             HorizontalContentAlignment="Stretch"
-                            SelectionChanged="Model_SelectionChanged"/>
+                            SelectionChanged="Model_SelectionChanged">
+                            <CommonControls:ContentComboBox.BottomContent>
+                                <DockPanel>
+                                    <Button DockPanel.Dock="Right" Height="26" Width="26" Command="{Binding SettingsCommand}" CommandParameter="Language" >
+                                        <CommonControls:FontAwesome Icon="f013" Size="12"/>
+                                    </Button>
+                                    <UniformGrid Rows="1">
+                                        <Button Content="Install" Height="26" Command="{Binding InstallCommand}" CommandParameter="Language"/>
+                                        <Button Content="Download" Height="26" Command="{Binding DownloadCommand}" CommandParameter="Language"/>
+                                    </UniformGrid>
+                                </DockPanel>
+                            </CommonControls:ContentComboBox.BottomContent>
+                        </CommonControls:ContentComboBox>
                         <TextBlock Text="No models found." FontStyle="Italic" Opacity=".4" Margin="5,-2,0,0" VerticalAlignment="Center" IsHitTestVisible="False" Visibility="{Binding ModelCollectionView.IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </Grid>
                 </DockPanel>

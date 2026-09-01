@@ -118,6 +118,7 @@ namespace Amuse.App.Dialogs
                 Settings.Components.Remove(_originalComponentModel);
             }
             Settings.Components.Insert(index, ComponentModel);
+            ComponentModel.Initialize(Settings);
             return base.SaveAsync();
         }
 

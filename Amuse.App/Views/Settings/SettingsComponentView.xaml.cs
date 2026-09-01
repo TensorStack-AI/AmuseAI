@@ -25,7 +25,7 @@ namespace Amuse.App.Views
         public SettingsComponentView(Settings settings, NavigationService navigationService, IModelDownloadService downloadService, IHistoryService historyService, ILogger<SettingsComponentView> logger)
             : base(settings, navigationService, downloadService, historyService, logger)
         {
-            FilterStatuses = ["Show All", .. Enum.GetNames<ModelStatusType>()];
+            FilterStatuses = ["Show All", "Installed", "Unknown"];
             FilterStatus = FilterStatuses[0];
             AddModelCommand = new AsyncRelayCommand(AddModelAsync);
             CopyModelCommand = new AsyncRelayCommand(CopyModelAsync, () => SelectedModel is not null);
@@ -90,6 +90,9 @@ namespace Amuse.App.Views
             return (obj) =>
             {
                 if (obj is not ComponentModel model)
+                    return false;
+
+                if (model.Status != ModelStatusType.Installed && model.Status != ModelStatusType.Unknown)
                     return false;
 
                 var isvalid = true;

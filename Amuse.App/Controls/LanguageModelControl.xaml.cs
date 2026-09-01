@@ -1,4 +1,5 @@
 ﻿using Amuse.App.Common;
+using Amuse.App.Dialogs;
 using Amuse.App.Services;
 using Amuse.App.Views;
 using Amuse.Common;
@@ -41,6 +42,9 @@ namespace Amuse.App.Controls
             QualityModes = [];
             LoadCommand = new AsyncRelayCommand(LoadAsync, CanLoad);
             UnloadCommand = new AsyncRelayCommand(UnloadAsync, CanUnload);
+            InstallCommand = new AsyncRelayCommand<string>(OnInstall);
+            DownloadCommand = new AsyncRelayCommand<string>(OnDownload);
+            SettingsCommand = new AsyncRelayCommand<string>(OnSettings);
             InitializeComponent();
         }
 
@@ -53,6 +57,9 @@ namespace Amuse.App.Controls
         public View ViewType { get; set; }
         public AsyncRelayCommand LoadCommand { get; }
         public AsyncRelayCommand UnloadCommand { get; }
+        public AsyncRelayCommand<string> InstallCommand { get; }
+        public AsyncRelayCommand<string> DownloadCommand { get; }
+        public AsyncRelayCommand<string> SettingsCommand { get; }
         public ObservableCollection<QualityProfileModel> QualityModes { get; }
 
         public Settings Settings
@@ -364,7 +371,7 @@ namespace Amuse.App.Controls
                         if (!await DownloadService.QueueAsync(_selectedModel))
                             return true;
                     }
-                    await NavigationService.NavigateAsync((int)View.Downloads);
+                    await NavigationService.NavigateAsync((int)View.Models);
                 }
                 return true;
             }
@@ -437,6 +444,37 @@ namespace Amuse.App.Controls
             }
 
             return bestIndex;
+        }
+
+
+        private async Task OnInstall(string sender)
+        {
+            if (sender.Equals("Language"))
+            {
+                var dialog = DialogService.GetDialog<LanguageModelWizardDialog>();
+                if (await dialog.ShowDialogAsync())
+                {
+                    SelectedModel = dialog.SelectedTemplate;
+                }
+            }
+        }
+
+
+        private async Task OnDownload(string sender)
+        {
+            if (sender.Equals("Language"))
+            {
+                await NavigationService.NavigateAsync((int)View.Diffusion, new ModelViewOpenArgs(ModelCategoryType.LLM));
+            }
+        }
+
+
+        private async Task OnSettings(string sender)
+        {
+            if (sender.Equals("Language"))
+            {
+                await NavigationService.NavigateAsync((int)View.Diffusion);
+            }
         }
     }
 }

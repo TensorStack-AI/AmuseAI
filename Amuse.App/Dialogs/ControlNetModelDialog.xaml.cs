@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Adam Clark. All rights reserved.
 // Licensed under the Apache 2.0 License.
 using Amuse.App.Common;
+using Amuse.Common;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -43,13 +44,20 @@ namespace Amuse.App.Dialogs
         }
 
 
-        public Task<bool> AddAsync()
+        public async Task<bool> AddAsync()
+        {
+            await AddAsync(Settings.DiffusionPipelines.First());
+            return await base.ShowDialogAsync();
+        }
+
+
+        public Task<bool> AddAsync(PipelineType pipelineType)
         {
             var modelId = Settings.ControlNetModels.NextId();
             ControlNetModel = new ControlNetModel
             {
                 Id = modelId,
-                Pipeline = Settings.DiffusionPipelines.First(),
+                Pipeline = pipelineType,
                 Name = "New ControlNet",
                 Checkpoint = new CheckpointComponent
                 {
@@ -117,6 +125,8 @@ namespace Amuse.App.Dialogs
                 Settings.ControlNetModels.Remove(_originalControlNetModel);
             }
             Settings.ControlNetModels.Insert(index, ControlNetModel);
+
+            ControlNetModel.Initialize(Settings);
             return base.SaveAsync();
         }
 

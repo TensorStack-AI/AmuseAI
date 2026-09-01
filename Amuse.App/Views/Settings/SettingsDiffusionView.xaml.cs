@@ -30,8 +30,8 @@ namespace Amuse.App.Views
             : base(settings, navigationService, downloadService, historyService, logger)
         {
             FilterBackends = ["Show All", .. Enum.GetNames<BackendType>()];
-            FilterStatuses = ["Show All", .. Enum.GetNames<ModelStatusType>()];
-            FilterPipelines = ["Show All", .. settings.DiffusionPipelines.Select(x => x.ToString())];
+            FilterStatuses = ["Show All", "Installed", "Unknown"];
+            FilterPipelines = ["Show All", .. settings.DiffusionPipelines.Select(x => x.ToString()).Order()];
             FilterMediaTypes = ["Show All", .. Enum.GetNames<MediaType>()];
             FilterBackend = FilterBackends[0];
             FilterStatus = FilterStatuses[0];
@@ -124,6 +124,9 @@ namespace Amuse.App.Views
             return (obj) =>
             {
                 if (obj is not DiffusionModel model)
+                    return false;
+
+                if (model.Status != ModelStatusType.Installed && model.Status != ModelStatusType.Unknown)
                     return false;
 
                 var isvalid = true;
