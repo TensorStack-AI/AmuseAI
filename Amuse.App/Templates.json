@@ -12048,6 +12048,11 @@
           "Type": "Component",
           "Path": "TE_Gemma3_12B_GGUF"
         },
+        "LatentUpsampler": {
+          "Name": "LatentUpsampler",
+          "Type": "Component",
+          "Path": "LU_LTX23"
+        },
         "Transformer": {
           "Name": "Transformer",
           "Type": "LocalFile"
@@ -12247,6 +12252,411 @@
           "Name": "TextEncoder",
           "Type": "Component",
           "Path": "TE_Gemma3_12B_GGUF"
+        },
+        "LatentUpsampler": {
+          "Name": "LatentUpsampler",
+          "Type": "Component",
+          "Path": "LU_LTX23"
+        },
+        "Transformer": {
+          "Name": "Transformer",
+          "Type": "LocalFile"
+        }
+      },
+      "MemoryProfile": [
+        {
+          "QualityMode": "Draft",
+          "MemoryModes": [ 12, 20, 48 ]
+        },
+        {
+          "QualityMode": "Standard",
+          "MemoryModes": [ 12, 23, 64 ]
+        },
+        {
+          "QualityMode": "Production",
+          "MemoryModes": [ 12, 46, 92 ]
+        }
+      ],
+      "DefaultOptions": {
+        "Steps": 8,
+        "Width": 768,
+        "Height": 512,
+        "Frames": 121,
+        "FrameRate": 24,
+        "GuidanceScale": 0,
+        "IsVaeTilingEnabled": true,
+        "IsVaeSlicingEnabled": true,
+        "IsFirstFrameLastFrameEnabled": true,
+        "Scheduler": "Euler",
+        "Schedulers": [
+          {
+            "Scheduler": "Euler"
+          },
+          {
+            "Scheduler": "EulerAncestral"
+          },
+          {
+            "Scheduler": "DPM2"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2SAncestral"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2M"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2Mv2"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2MSDE"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2MSDEBT"
+          },
+          {
+            "Scheduler": "ResidualMultistep"
+          },
+          {
+            "Scheduler": "Residual2S"
+          },
+          {
+            "Scheduler": "Heun"
+          },
+          {
+            "Scheduler": "IPNDM"
+          },
+          {
+            "Scheduler": "LCM"
+          },
+          {
+            "Scheduler": "DDIM"
+          },
+          {
+            "Scheduler": "TCD"
+          },
+          {
+            "Scheduler": "LMS"
+          },
+          {
+            "Scheduler": "ERSDE"
+          }
+        ],
+        "FrameOptions": [
+          65,
+          97,
+          121,
+          137,
+          161,
+          257,
+          385,
+          513,
+          641,
+          769,
+          897,
+          1025
+        ]
+      },
+      "Resolutions": [
+        {
+          "Width": 2176,
+          "Height": 3840
+        },
+        {
+          "Width": 864,
+          "Height": 2048
+        },
+        {
+          "Width": 1088,
+          "Height": 1920
+        },
+        {
+          "Width": 736,
+          "Height": 1280
+        },
+        {
+          "Width": 768,
+          "Height": 1152
+        },
+        {
+          "Width": 544,
+          "Height": 960
+        },
+        {
+          "Width": 512,
+          "Height": 768
+        },
+        {
+          "Width": 480,
+          "Height": 736
+        },
+        {
+          "Width": 640,
+          "Height": 640
+        },
+        {
+          "Width": 736,
+          "Height": 480
+        },
+        {
+          "Width": 768,
+          "Height": 512,
+          "IsDefault": true
+        },
+        {
+          "Width": 960,
+          "Height": 544
+        },
+        {
+          "Width": 1152,
+          "Height": 768
+        },
+        {
+          "Width": 1280,
+          "Height": 736
+        },
+        {
+          "Width": 1920,
+          "Height": 1088
+        },
+        {
+          "Width": 2048,
+          "Height": 864
+        },
+        {
+          "Width": 3840,
+          "Height": 2176
+        }
+      ]
+    },
+    {
+      "Backend": "StableDiffusionCpp",
+      "Name": "LTX25_Base_CPP",
+      "Template": "LTX_25",
+      "Pipeline": "LTX20Pipeline",
+      "ModelType": "Base",
+      "BaseType": "bfloat16",
+      "MediaType": "Video",
+      "ProcessTypes": [ "TextToVideo", "ImageToVideo" ],
+      "Checkpoint": {
+        "Vae": {
+          "Name": "AutoEncoder",
+          "Type": "Component",
+          "Path": "VAE_LTX25"
+        },
+        "AudioVae": {
+          "Name": "Audio AutoEncoder",
+          "Type": "Component",
+          "Path": "AVAE_LTX25"
+        },
+        "TextEncoder": {
+          "Name": "TextEncoder",
+          "Type": "Component",
+          "Path": "TE_LTX25"
+        },
+        "LatentUpsampler": {
+          "Name": "LatentUpsampler",
+          "Type": "Component",
+          "Path": "LU_LTX25"
+        },
+        "Transformer": {
+          "Name": "Transformer",
+          "Type": "LocalFile"
+        }
+      },
+      "MemoryProfile": [
+        {
+          "QualityMode": "Draft",
+          "MemoryModes": [ 12, 20, 48 ]
+        },
+        {
+          "QualityMode": "Standard",
+          "MemoryModes": [ 12, 23, 64 ]
+        },
+        {
+          "QualityMode": "Production",
+          "MemoryModes": [ 12, 46, 92 ]
+        }
+      ],
+      "DefaultOptions": {
+        "Steps": 40,
+        "Width": 768,
+        "Height": 512,
+        "Frames": 121,
+        "FrameRate": 24,
+        "GuidanceScale": 6,
+        "IsVaeTilingEnabled": true,
+        "IsVaeSlicingEnabled": true,
+        "IsFirstFrameLastFrameEnabled": true,
+        "Scheduler": "Euler",
+        "Schedulers": [
+          {
+            "Scheduler": "Euler"
+          },
+          {
+            "Scheduler": "EulerAncestral"
+          },
+          {
+            "Scheduler": "DPM2"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2SAncestral"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2M"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2Mv2"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2MSDE"
+          },
+          {
+            "Scheduler": "DPMPlusPlus2MSDEBT"
+          },
+          {
+            "Scheduler": "ResidualMultistep"
+          },
+          {
+            "Scheduler": "Residual2S"
+          },
+          {
+            "Scheduler": "Heun"
+          },
+          {
+            "Scheduler": "IPNDM"
+          },
+          {
+            "Scheduler": "LCM"
+          },
+          {
+            "Scheduler": "DDIM"
+          },
+          {
+            "Scheduler": "TCD"
+          },
+          {
+            "Scheduler": "LMS"
+          },
+          {
+            "Scheduler": "ERSDE"
+          }
+        ],
+        "FrameOptions": [
+          65,
+          97,
+          121,
+          137,
+          161,
+          257,
+          385,
+          513,
+          641,
+          769,
+          897,
+          1025
+        ]
+      },
+      "Resolutions": [
+        {
+          "Width": 2176,
+          "Height": 3840
+        },
+        {
+          "Width": 864,
+          "Height": 2048
+        },
+        {
+          "Width": 1088,
+          "Height": 1920
+        },
+        {
+          "Width": 736,
+          "Height": 1280
+        },
+        {
+          "Width": 768,
+          "Height": 1152
+        },
+        {
+          "Width": 544,
+          "Height": 960
+        },
+        {
+          "Width": 512,
+          "Height": 768
+        },
+        {
+          "Width": 480,
+          "Height": 736
+        },
+        {
+          "Width": 640,
+          "Height": 640
+        },
+        {
+          "Width": 736,
+          "Height": 480
+        },
+        {
+          "Width": 768,
+          "Height": 512,
+          "IsDefault": true
+        },
+        {
+          "Width": 960,
+          "Height": 544
+        },
+        {
+          "Width": 1152,
+          "Height": 768
+        },
+        {
+          "Width": 1280,
+          "Height": 736
+        },
+        {
+          "Width": 1920,
+          "Height": 1088
+        },
+        {
+          "Width": 2048,
+          "Height": 864
+        },
+        {
+          "Width": 3840,
+          "Height": 2176
+        }
+      ]
+    },
+    {
+      "Backend": "StableDiffusionCpp",
+      "Name": "LTX25_Distilled_CPP",
+      "Template": "LTX_25",
+      "Pipeline": "LTX20Pipeline",
+      "ModelType": "Distilled",
+      "BaseType": "bfloat16",
+      "MediaType": "Video",
+      "ProcessTypes": [ "TextToVideo", "ImageToVideo" ],
+      "Checkpoint": {
+        "Vae": {
+          "Name": "AutoEncoder",
+          "Type": "Component",
+          "Path": "VAE_LTX25"
+        },
+        "AudioVae": {
+          "Name": "Audio AutoEncoder",
+          "Type": "Component",
+          "Path": "AVAE_LTX25"
+        },
+        "TextEncoder": {
+          "Name": "TextEncoder",
+          "Type": "Component",
+          "Path": "TE_LTX25"
+        },
+        "LatentUpsampler": {
+          "Name": "LatentUpsampler",
+          "Type": "Component",
+          "Path": "LU_LTX25"
         },
         "Transformer": {
           "Name": "Transformer",
@@ -15900,12 +16310,20 @@
       "Backend": "StableDiffusionCpp",
       "Options": [
         {
-          "Name": "2.3 Base",
+          "Name": "2.3 Dev",
           "Template": "LTX23_Base_CPP"
         },
         {
           "Name": "2.3 Distilled",
           "Template": "LTX23_Distilled_CPP"
+        },
+        {
+          "Name": "2.5 Dev",
+          "Template": "LTX25_Base_CPP"
+        },
+        {
+          "Name": "2.5 Distilled",
+          "Template": "LTX25_Distilled_CPP"
         }
       ]
     },

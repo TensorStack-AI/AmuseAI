@@ -297,30 +297,9 @@
                 <DockPanel Height="360" Margin="0,6,0,0">
 
                     <DockPanel DockPanel.Dock="Bottom"  Margin="6" >
-                        <DockPanel DockPanel.Dock="Top" Margin="10,0,-20,0" Visibility="{Binding SelectedItem.MemoryProfile, Converter={StaticResource NullVisibilityConverter}, FallbackValue=Collapsed}">
-                            <UniformGrid DockPanel.Dock="Top" Columns="4">
-                                <TextBlock Text="Quality" Style="{StaticResource FieldTextBlockStyle}" />
-                                <TextBlock Text="Low" Style="{StaticResource FieldTextBlockStyle}" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Medium" Style="{StaticResource FieldTextBlockStyle}" HorizontalAlignment="Center"/>
-                                <TextBlock Text="High" Style="{StaticResource FieldTextBlockStyle}" HorizontalAlignment="Center"/>
-                            </UniformGrid>
-                            <Border DockPanel.Dock="Top" BorderThickness="0,1,0,0" BorderBrush="{StaticResource DefaultForeground}" Opacity=".2" Margin="0,0,26,0"/>
-                            <ItemsControl ItemsSource="{Binding SelectedItem.MemoryProfile}" Opacity=".9">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <UniformGrid Columns="4" Visibility="{Binding QualityMode, Converter={StaticResource InverseEnumToVisibilityConverter}, ConverterParameter=Draft}">
-                                            <TextBlock Text="{Binding QualityMode}" />
-                                            <TextBlock Text="{Binding MemoryModes[0], StringFormat={}{0}GB}" HorizontalAlignment="Center"/>
-                                            <TextBlock Text="{Binding MemoryModes[1], StringFormat={}{0}GB}" HorizontalAlignment="Center"/>
-                                            <TextBlock Text="{Binding MemoryModes[2], StringFormat={}{0}GB}" HorizontalAlignment="Center"/>
-                                        </UniformGrid>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </DockPanel>
                         <UniformGrid Rows="1" Height="32" Margin="0,6,0,0">
                             <Grid>
-                                <CommonControls:IconButton Text="Download" FontSize="13" Icon="f0ed" IconSize="16" IconStyle="Light" IconColor="{StaticResource AccentColour2}" Command="{Binding DownloadCommand}" Visibility="{Binding SelectedItem.Status, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Available}"/>
+                                <CommonControls:IconButton Text="Download" FontSize="13" Icon="f0ed" IconSize="16" IconStyle="Light" IconColor="{StaticResource AccentColour2}" Command="{Binding DownloadCommand}" />
                                 <CommonControls:IconButton Text="Update" FontSize="13" Icon="f0ed" IconSize="16" IconStyle="Light" IconColor="{StaticResource WarningColour}" Command="{Binding DownloadCommand}" Visibility="{Binding SelectedItem.Status, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Unknown}"/>
                             </Grid>
                             <CommonControls:IconButton Text="Information" FontSize="13" Icon="f05a" IconSize="16" IconStyle="Light"  IconColor="{StaticResource InfoColour}" Command="{Binding DownloadInformationCommand}" />
@@ -335,25 +314,31 @@
                                 <!--DiffusionModel-->
                                 <DataTemplate DataType="{x:Type Common:DiffusionModel}">
                                     <DockPanel>
-                                        <Grid DockPanel.Dock="Bottom" Margin="16,0,0,10">
+
+                                        <Grid DockPanel.Dock="Bottom" Margin="30,0,0,10">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="54"/>
+                                                <ColumnDefinition Width="60"/>
                                                 <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="74"/>
+                                                <ColumnDefinition Width="50"/>
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition/>
                                                 <RowDefinition/>
+                                                <RowDefinition/>
                                             </Grid.RowDefinitions>
-                                            <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Type:" />
-                                            <TextBlock Grid.Row="0" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Status:" />
-                                            <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Backend:" />
-                                            <TextBlock Grid.Row="1" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Access:" />
-                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ModelType}" />
-                                            <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding Status}" />
-                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Backend}" />
-                                            <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
+                                            <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Memory:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding MemoryProfile[1].Recommended}" />
+                                            <TextBlock Grid.Row="0" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Type:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding ModelType}" />
+                                            <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Status:" />
+                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Status}" />
+                                            <TextBlock Grid.Row="1" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Output:" />
+                                            <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding MediaType}" />
+                                            <TextBlock Grid.Row="2" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Backend:" />
+                                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Backend}" />
+                                            <TextBlock Grid.Row="2" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Access:" />
+                                            <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
                                         </Grid>
 
                                         <StackPanel Margin="6,2">
@@ -384,25 +369,30 @@
                                 <DataTemplate DataType="{x:Type Common:LanguageModel}">
                                     <DockPanel>
 
-                                        <Grid DockPanel.Dock="Bottom" Margin="16,0,0,10">
+                                        <Grid DockPanel.Dock="Bottom" Margin="30,0,0,10">
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="54"/>
+                                                <ColumnDefinition Width="60"/>
                                                 <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="74"/>
+                                                <ColumnDefinition Width="50"/>
                                                 <ColumnDefinition Width="*"/>
                                             </Grid.ColumnDefinitions>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition/>
                                                 <RowDefinition/>
+                                                <RowDefinition/>
                                             </Grid.RowDefinitions>
-                                            <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Type:" />
-                                            <TextBlock Grid.Row="0" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Status:" />
-                                            <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Backend:" />
-                                            <TextBlock Grid.Row="1" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Access:" />
-                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ModelType}" />
-                                            <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding Status}" />
-                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Backend}" />
-                                            <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
+                                            <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Memory:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding MemoryProfile[1].Recommended}" />
+                                            <TextBlock Grid.Row="0" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Type:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding ModelType}" />
+                                            <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Status:" />
+                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Status}" />
+                                            <TextBlock Grid.Row="1" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Output:" />
+                                            <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding MediaType}" />
+                                            <TextBlock Grid.Row="2" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Backend:" />
+                                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Backend}" />
+                                            <TextBlock Grid.Row="2" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Access:" />
+                                            <TextBlock Grid.Row="2" Grid.Column="3" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
                                         </Grid>
 
                                         <StackPanel Margin="6,2">
@@ -432,6 +422,22 @@
                                 <!--LoraAdapterModel-->
                                 <DataTemplate DataType="{x:Type Common:LoraAdapterModel}">
                                     <DockPanel>
+                                        <Grid DockPanel.Dock="Bottom" Margin="30,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="45"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="45"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition/>
+                                                <RowDefinition/>
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Status:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Status}" />
+                                            <TextBlock Grid.Row="0" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Access:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
+                                        </Grid>
                                         <StackPanel Margin="6,2">
                                             <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumDisplayNameConverter}}" FontSize="15"  TextAlignment="Center" Opacity=".7" />
                                             <TextBlock Text="{Binding Name}" FontSize="23" FontWeight="DemiBold" TextAlignment="Center" Margin="0,-2,0,2" TextWrapping="Wrap"/>
@@ -451,20 +457,6 @@
                                             </ItemsControl>
                                             <CommonControls:HyperlinkControl Link="{Binding Link}" Label="{Binding Link}" Foreground="DeepSkyBlue" HorizontalAlignment="Center" Opacity=".9" Margin="0,2,0,0"/>
                                             <Border BorderBrush="{StaticResource DefaultForeground}" BorderThickness="0,2,0,0" Margin="0,10" Opacity=".2"/>
-                                            <Grid Margin="0,10,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="80"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition/>
-                                                    <RowDefinition/>
-                                                </Grid.RowDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Status:" />
-                                                <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="AccessToken:" />
-                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Status}" />
-                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
-                                            </Grid>
                                         </StackPanel>
                                     </DockPanel>
                                 </DataTemplate>
@@ -472,6 +464,22 @@
                                 <!--ControlNetModel-->
                                 <DataTemplate DataType="{x:Type Common:ControlNetModel}">
                                     <DockPanel>
+                                        <Grid DockPanel.Dock="Bottom" Margin="30,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="45"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="45"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition/>
+                                                <RowDefinition/>
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Status:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Status}" />
+                                            <TextBlock Grid.Row="0" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Access:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
+                                        </Grid>
                                         <StackPanel Margin="6,2">
                                             <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumDisplayNameConverter}}" FontSize="15"  TextAlignment="Center" Opacity=".7" />
                                             <TextBlock Text="{Binding Name}" FontSize="23" FontWeight="DemiBold" TextAlignment="Center" Margin="0,-2,0,2" TextWrapping="Wrap"/>
@@ -491,20 +499,6 @@
                                             </ItemsControl>
                                             <CommonControls:HyperlinkControl Link="{Binding Link}" Label="{Binding Link}" Foreground="DeepSkyBlue" HorizontalAlignment="Center" Opacity=".9" Margin="0,2,0,0"/>
                                             <Border BorderBrush="{StaticResource DefaultForeground}" BorderThickness="0,2,0,0" Margin="0,10" Opacity=".2"/>
-                                            <Grid Margin="0,10,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="80"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition/>
-                                                    <RowDefinition/>
-                                                </Grid.RowDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Status:" />
-                                                <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="AccessToken:" />
-                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Status}" />
-                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
-                                            </Grid>
                                         </StackPanel>
                                     </DockPanel>
                                 </DataTemplate>
@@ -512,25 +506,31 @@
                                 <!--UpscaleModel-->
                                 <DataTemplate DataType="{x:Type Common:UpscaleModel}">
                                     <DockPanel>
+                                        <Grid DockPanel.Dock="Bottom" Margin="30,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="55"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="45"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition/>
+                                                <RowDefinition/>
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Memory:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding MemorySize, StringFormat={}{0}GB}" />
+                                            <TextBlock Grid.Row="0" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Scale:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding ScaleFactor, StringFormat={}{0}x}" />
+                                            <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Status:" />
+                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Status}" />
+                                            <TextBlock Grid.Row="1" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Access:" />
+                                            <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
+                                        </Grid>
                                         <StackPanel Margin="6,2">
                                             <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumDisplayNameConverter}}" FontSize="15"  TextAlignment="Center" Opacity=".7" />
                                             <TextBlock Text="{Binding Name}" FontSize="23" FontWeight="DemiBold" TextAlignment="Center" Margin="0,-2,0,2" TextWrapping="Wrap"/>
                                             <CommonControls:HyperlinkControl Link="{Binding Link}" Label="{Binding Link}" Foreground="DeepSkyBlue" HorizontalAlignment="Center" Opacity=".9" Margin="0,2,0,0"/>
                                             <Border BorderBrush="{StaticResource DefaultForeground}" BorderThickness="0,2,0,0" Margin="0,10" Opacity=".2"/>
-                                            <Grid Margin="0,10,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="80"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition/>
-                                                    <RowDefinition/>
-                                                </Grid.RowDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Status:" />
-                                                <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="AccessToken:" />
-                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Status}" />
-                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
-                                            </Grid>
                                         </StackPanel>
                                     </DockPanel>
                                 </DataTemplate>
@@ -538,25 +538,31 @@
                                 <!--ExtractModel-->
                                 <DataTemplate DataType="{x:Type Common:ExtractModel}">
                                     <DockPanel>
+                                        <Grid DockPanel.Dock="Bottom" Margin="30,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="55"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="45"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition/>
+                                                <RowDefinition/>
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Memory:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding MemorySize, StringFormat={}{0}GB}" />
+                                            <TextBlock Grid.Row="0" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Type:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding Type}" />
+                                            <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Status:" />
+                                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Status}" />
+                                            <TextBlock Grid.Row="1" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Access:" />
+                                            <TextBlock Grid.Row="1" Grid.Column="3" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
+                                        </Grid>
                                         <StackPanel Margin="6,2">
                                             <TextBlock Text="{Binding Pipeline, Converter={StaticResource EnumDisplayNameConverter}}" FontSize="15"  TextAlignment="Center" Opacity=".7" />
                                             <TextBlock Text="{Binding Name}" FontSize="23" FontWeight="DemiBold" TextAlignment="Center" Margin="0,-2,0,2" TextWrapping="Wrap"/>
                                             <CommonControls:HyperlinkControl Link="{Binding Link}" Label="{Binding Link}" Foreground="DeepSkyBlue" HorizontalAlignment="Center" Opacity=".9" Margin="0,2,0,0"/>
                                             <Border BorderBrush="{StaticResource DefaultForeground}" BorderThickness="0,2,0,0" Margin="0,10" Opacity=".2"/>
-                                            <Grid Margin="0,10,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="80"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition/>
-                                                    <RowDefinition/>
-                                                </Grid.RowDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Status:" />
-                                                <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="AccessToken:" />
-                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Status}" />
-                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
-                                            </Grid>
                                         </StackPanel>
                                     </DockPanel>
                                 </DataTemplate>
@@ -564,25 +570,27 @@
                                 <!--ComponentModel-->
                                 <DataTemplate DataType="{x:Type Common:ComponentModel}">
                                     <DockPanel>
+                                        <Grid DockPanel.Dock="Bottom" Margin="30,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="45"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="45"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition/>
+                                                <RowDefinition/>
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Status:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Status}" />
+                                            <TextBlock Grid.Row="0" Grid.Column="2" FontStyle="Italic" Opacity=".7" Text="Access:" />
+                                            <TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
+                                        </Grid>
                                         <StackPanel Margin="6,2">
                                             <TextBlock Text="{Binding Checkpoint.Folder}" FontSize="15"  TextAlignment="Center" Opacity=".7" />
                                             <TextBlock Text="{Binding Name}" FontSize="23" FontWeight="DemiBold" TextAlignment="Center" Margin="0,-2,0,2" TextWrapping="Wrap"/>
                                             <CommonControls:HyperlinkControl Link="{Binding Link}" Label="{Binding Link}" Foreground="DeepSkyBlue" HorizontalAlignment="Center" Opacity=".9" Margin="0,2,0,0"/>
                                             <Border BorderBrush="{StaticResource DefaultForeground}" BorderThickness="0,2,0,0" Margin="0,10" Opacity=".2"/>
-                                            <Grid Margin="0,10,0,0">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="80"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
-                                                <Grid.RowDefinitions>
-                                                    <RowDefinition/>
-                                                    <RowDefinition/>
-                                                </Grid.RowDefinitions>
-                                                <TextBlock Grid.Row="0" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="Status:" />
-                                                <TextBlock Grid.Row="1" Grid.Column="0" FontStyle="Italic" Opacity=".7" Text="AccessToken:" />
-                                                <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Status}" />
-                                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AccessToken, TargetNullValue=Not Required}" />
-                                            </Grid>
                                         </StackPanel>
                                     </DockPanel>
                                 </DataTemplate>

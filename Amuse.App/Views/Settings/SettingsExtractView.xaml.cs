@@ -88,6 +88,7 @@ namespace Amuse.App.Views
 
         public override Task OpenAsync(OpenViewArgs args = null)
         {
+            ModelCollection?.Refresh();
             return base.OpenAsync(args);
         }
 

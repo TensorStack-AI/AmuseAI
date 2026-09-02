@@ -337,6 +337,7 @@ namespace Amuse.App.Controls
 
         public void SetPipeline(PipelineModel pipeline)
         {
+            ModelCollectionView?.Refresh();
             if (pipeline == null)
                 return;
 

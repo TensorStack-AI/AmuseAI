@@ -290,6 +290,8 @@ namespace Amuse.App.Controls
 
         public void SetPipeline(PipelineModel pipeline)
         {
+            ExtractCollectionView?.Refresh();
+            UpscaleCollectionView?.Refresh();
             if (pipeline == null)
                 return;
 

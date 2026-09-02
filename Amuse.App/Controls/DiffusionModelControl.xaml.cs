@@ -698,6 +698,11 @@ namespace Amuse.App.Controls
 
         public void SetPipeline(PipelineModel pipeline)
         {
+            ModelCollectionView?.Refresh();
+            LoraCollectionView?.Refresh();
+            ControlNetCollectionView?.Refresh();
+            ExtractCollectionView?.Refresh();
+            UpscaleCollectionView?.Refresh();
             if (pipeline == null)
                 return;
 

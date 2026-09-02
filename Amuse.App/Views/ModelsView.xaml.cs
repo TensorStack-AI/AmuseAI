@@ -33,7 +33,7 @@ namespace Amuse.App.Views
         private ModelCategoryType? _filterCategoryType;
         private MediaType? _filterMediaType;
         private BackendType? _filterBackendType;
-        private bool _filterInstalled;
+        private bool _filterInstalled = true;
 
         public ModelsView(Settings settings, NavigationService navigationService, IModelDownloadService downloadService, IHistoryService historyService, ILogger<ModelsView> logger)
             : base(settings, navigationService, downloadService, historyService, logger)
@@ -182,7 +182,7 @@ namespace Amuse.App.Views
                     if (_filterBackendType.HasValue)
                         isValid = isValid && _filterBackendType != BackendType.OnnxRuntime;
                     if (_filterPipeline != String_AllPipelines)
-                        isValid = isValid && loraAdapterModel.Pipeline.GetDisplayName() == _filterPipeline;
+                        isValid = isValid && pipelineName == _filterPipeline;
                     if (!string.IsNullOrEmpty(_filterText))
                         isValid = isValid && (model.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase)
                                          || pipelineName.Contains(_filterText, StringComparison.OrdinalIgnoreCase));
@@ -198,7 +198,7 @@ namespace Amuse.App.Views
                     if (_filterBackendType.HasValue)
                         isValid = isValid && _filterBackendType != BackendType.OnnxRuntime;
                     if (_filterPipeline != String_AllPipelines)
-                        isValid = isValid && controlnet.Pipeline.GetDisplayName() == _filterPipeline;
+                        isValid = isValid && pipelineName == _filterPipeline;
                     if (!string.IsNullOrEmpty(_filterText))
                         isValid = isValid && (model.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase)
                                          || pipelineName.Contains(_filterText, StringComparison.OrdinalIgnoreCase));
@@ -213,7 +213,7 @@ namespace Amuse.App.Views
                     if (_filterBackendType.HasValue)
                         isValid = isValid && upscaleModel.Backend == _filterBackendType.Value;
                     if (_filterPipeline != String_AllPipelines)
-                        isValid = isValid && upscaleModel.Pipeline.GetDisplayName() == _filterPipeline;
+                        isValid = isValid && pipelineName == _filterPipeline;
                     if (!string.IsNullOrEmpty(_filterText))
                         isValid = isValid && (model.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase)
                                          || pipelineName.Contains(_filterText, StringComparison.OrdinalIgnoreCase));
@@ -228,7 +228,7 @@ namespace Amuse.App.Views
                     if (_filterBackendType.HasValue)
                         isValid = isValid && extractModel.Backend == _filterBackendType.Value;
                     if (_filterPipeline != String_AllPipelines)
-                        isValid = isValid && extractModel.Pipeline.GetDisplayName() == _filterPipeline;
+                        isValid = isValid && pipelineName == _filterPipeline;
                     if (!string.IsNullOrEmpty(_filterText))
                         isValid = isValid && (model.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase)
                                          || pipelineName.Contains(_filterText, StringComparison.OrdinalIgnoreCase));
@@ -243,19 +243,22 @@ namespace Amuse.App.Views
                     if (_filterBackendType.HasValue)
                         isValid = isValid && languageModel.Backend == _filterBackendType.Value;
                     if (_filterPipeline != String_AllPipelines)
-                        isValid = isValid && languageModel.Pipeline.GetDisplayName() == _filterPipeline;
+                        isValid = isValid && pipelineName == _filterPipeline;
                     if (!string.IsNullOrEmpty(_filterText))
                         isValid = isValid && (model.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase)
                                          || pipelineName.Contains(_filterText, StringComparison.OrdinalIgnoreCase));
                 }
                 else if (model is ComponentModel componentModel)
                 {
+                    if (_filterMediaType.HasValue || _filterPipeline != String_AllPipelines)
+                        isValid = false;
+
                     if (_filterCategoryType.HasValue)
                         isValid = isValid && _filterCategoryType == ModelCategoryType.Component;
                     if (_filterBackendType.HasValue)
                         isValid = isValid && _filterBackendType != BackendType.OnnxRuntime;
-                    if (_filterMediaType.HasValue || _filterPipeline != String_AllPipelines)
-                        isValid = false;
+                    if (!string.IsNullOrEmpty(_filterText))
+                        isValid = isValid && model.Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase);
                 }
                 return isValid;
             };
