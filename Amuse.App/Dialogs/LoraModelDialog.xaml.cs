@@ -60,8 +60,7 @@ namespace Amuse.App.Dialogs
 
         public async Task<bool> AddAsync()
         {
-            await AddAsync(Settings.DiffusionPipelines.First());
-            return await base.ShowDialogAsync();
+            return await AddAsync(Settings.DiffusionPipelines.First());
         }
 
 
