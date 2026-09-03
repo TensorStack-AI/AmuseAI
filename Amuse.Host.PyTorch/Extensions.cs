@@ -52,7 +52,7 @@ namespace Amuse.Host.PyTorch
                 IsOptimizeChannelsEnabled = options.IsOptimizeChannelsEnabled,
 
                 MemoryMode = options.MemoryMode.Cast<Amuse.Common.MemoryModeType, TensorStack.Python.Common.MemoryModeType>(),
-                Pipeline = PipelineType.AutoTextPipeline.ToString(),
+                Pipeline = GetPipelineType(options).ToString(),
                 ProcessType = options.ProcessType.Cast<Amuse.Common.ProcessType, TensorStack.Python.Common.ProcessType>(),
                 QuantType = options.QuantType.Cast<Amuse.Common.QuantizationType, TensorStack.Python.Common.QuantizationType>(),
                 Variant = options.Variant,
@@ -1351,6 +1351,15 @@ namespace Amuse.Host.PyTorch
                 Common.SigmaScheduleType.Exponential => TensorStack.Python.Scheduler.SigmaScheduleType.Exponential,
                 _ => TensorStack.Python.Scheduler.SigmaScheduleType.Karras
             };
+        }
+
+
+        private static PipelineType GetPipelineType(this PipelineLoadOptions options)
+        {
+            if (options.Pipeline == PipelineType.Qwen3Pipeline || options.Pipeline == PipelineType.Gemma4Pipeline)
+                return PipelineType.AutoTextPipeline;
+
+            return options.Pipeline;
         }
 
 
