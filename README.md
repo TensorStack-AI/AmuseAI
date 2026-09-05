@@ -2,7 +2,7 @@
 Amuse is the flagship demo application for the [TensorStack SDK](https://github.com/saddam213/TensorStack), showcasing high-performance local AI image, video, audio and text generation through a modern, extensible .NET architecture.
 
 <div align="center">
-   <h1><a href="https://github.com/saddam213/AmuseAI/releases/download/v3.7.4/Amuse_v3.7.4.exe">Download Amuse v3.7.4</a></h1>
+   <h1><a href="https://github.com/saddam213/AmuseAI/releases/download/v3.7.5/Amuse_v3.7.5.exe">Download Amuse v3.7.5</a></h1>
 </div>
 
 ## Features
@@ -96,7 +96,7 @@ AMD GPUs can use **ROCm 7.14.0** for native GPU acceleration. ROCm provides supp
 
 
 <div align="center">
-   <h1><a href="https://github.com/saddam213/AmuseAI/releases/download/v3.7.4/Amuse_v3.7.4.exe">Download Amuse v3.7.4</a></h1>
+   <h1><a href="https://github.com/saddam213/AmuseAI/releases/download/v3.7.5/Amuse_v3.7.5.exe">Download Amuse v3.7.5</a></h1>
 </div>
 
 
