@@ -167,7 +167,7 @@ namespace Amuse.App.Controls
 
         private bool CanLoad()
         {
-            return _selectedDevice != null && !IsSelectionValid;
+            return _selectedDevice != null && !IsSelectionValid && (_selectedUpscaler != null || _selectedExtractor != null); 
         }
 
 
@@ -219,6 +219,9 @@ namespace Amuse.App.Controls
                 if (obj is not ExtractModel viewModel)
                     return false;
 
+                if (viewModel.Status == ModelStatusType.Available)
+                    return false;
+
                 if (_selectedDevice is null)
                     return false;
 
@@ -230,7 +233,10 @@ namespace Amuse.App.Controls
             UpscaleCollectionView = new ListCollectionView(Settings.UpscaleModels);
             UpscaleCollectionView.Filter = (obj) =>
             {
-                if (obj is not UpscaleModel model)
+                if (obj is not UpscaleModel viewModel)
+                    return false;
+
+                if (viewModel.Status == ModelStatusType.Available)
                     return false;
 
                 if (_selectedDevice is null)

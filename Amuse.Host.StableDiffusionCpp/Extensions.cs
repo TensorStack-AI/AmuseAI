@@ -35,8 +35,9 @@ namespace Amuse.Host.StableDiffusionCpp
                 MaxVram = pipelineOptions.MemoryMode == MemoryModeType.Device ? "0" : "-1",
                 DataType = GetDataType(pipelineOptions.QuantType, pipelineOptions.MemoryMode),
                 AutoFit = pipelineOptions.MemoryMode == MemoryModeType.Balanced,
-                StreamLayers = pipelineOptions.MemoryMode == MemoryModeType.OffloadCPU,
                 EagerLoad = pipelineOptions.MemoryMode == MemoryModeType.Device,
+                IsPrefetchEnabled = pipelineOptions.MemoryMode != MemoryModeType.Device,
+                IsSegmentedComputeEnabled = pipelineOptions.MemoryMode != MemoryModeType.Device,
 
                 // Misc
                 ForceSdxlVaeConvScale = true,
@@ -150,11 +151,21 @@ namespace Amuse.Host.StableDiffusionCpp
                     ModelArgs = "qwen_image_zero_cond_t=true" // TODO: should be optional
                 };
             }
+            if (pipelineOptions.Pipeline == PipelineType.HiDreamPipeline)
+            {
+                return contextOptions with
+                {
+                    ModelPath = pipelineOptions.CheckpointConfig.FullCheckpoint
+                };
+            }
             if (pipelineOptions.Pipeline == PipelineType.AnimaPipeline
              || pipelineOptions.Pipeline == PipelineType.ErniePipeline
              || pipelineOptions.Pipeline == PipelineType.Flux2KleinPipeline
              || pipelineOptions.Pipeline == PipelineType.Krea2Pipeline
-             || pipelineOptions.Pipeline == PipelineType.ZImagePipeline)
+             || pipelineOptions.Pipeline == PipelineType.ZImagePipeline
+             || pipelineOptions.Pipeline == PipelineType.BooguImagePipeline
+             || pipelineOptions.Pipeline == PipelineType.LensPipeline
+             || pipelineOptions.Pipeline == PipelineType.LongCatImagePipeline)
             {
                 return contextOptions with
                 {

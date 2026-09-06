@@ -236,6 +236,9 @@ namespace Amuse.App.Controls
                 if (obj is not LanguageModel viewModel)
                     return false;
 
+                if (viewModel.Status == ModelStatusType.Available)
+                    return false;
+
                 if (_selectedDevice is null)
                     return false;
 

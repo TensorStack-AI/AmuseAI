@@ -42,6 +42,15 @@ namespace Amuse.Common
         [Display(Name = "Qwen Image Pipeline", ShortName = "Qwen", Description = "Qwen's image-generation family, with particular emphasis on instruction following, complex compositions, and text rendering. It is well suited to tasks where the model needs to understand detailed natural-language instructions rather than simply reproduce a visual style.")]
         QwenImagePipeline = 50,
 
+        [Display(Name = "LongCat Image Pipeline", ShortName = "LongCat", Description = "LongCat-Image, a pioneering open-source and bilingual (Chinese-English) foundation model for image generation, designed to address core challenges in multilingual text rendering, photorealism, deployment efficiency, and developer accessibility prevalent in current leading models.")]
+        LongCatImagePipeline = 57,
+
+        [Display(Name = "Lens Pipeline", ShortName = "Lens", Description = "Microsoft's Lens is a compact 3.8-billion parameter text-to-image model designed for high-speed generation and precise prompt adherence. Built on a dual-stream Multimodal Diffusion Transformer (MMDiT), it bridges multi-layer text features from a large language model with a high-fidelity semantic VAE.")]
+        LensPipeline = 58,
+
+        [Display(Name = "HiDream Pipeline", ShortName = "HiDream", Description = "HiDream-O1 is an 8B-parameter unified image-generation model designed for text-to-image generation, instruction-based editing, long-text rendering, subject-driven personalization, and storyboard generation. It uses a Pixel-level Unified Transformer architecture with native support for complex prompts, detailed compositions.")]
+        HiDreamPipeline = 59,
+
         [Display(Name = "Ideogram4 Pipeline", ShortName = "Ideogram4", Description = "A model family particularly strong at generating images containing readable, correctly structured text. Well suited to posters, advertisements, logos, typography-heavy designs, and other graphic-design-oriented generations where text accuracy matters.")]
         IdeogramPipeline = 61,
 
@@ -65,6 +74,9 @@ namespace Amuse.Common
 
         [Display(Name = "Kandinsky5 Image Pipeline", ShortName = "Kandinsky5", Description = "The fifth generation of the Kandinsky family, designed for high-quality text-to-image generation with strong semantic understanding and detailed visual synthesis. Intended as a general-purpose model for both artistic and realistic image generation.")]
         Kandinsky5ImagePipeline = 68,
+
+        [Display(Name = "Boogu Image Pipeline", ShortName = "BooguImage", Description = "BooguImage is an AI-powered image generation and editing tool that helps users quickly turn ideas into high-quality visuals. With simple prompts, users can create, edit, enhance, and transform images for creative, personal, or professional projects.")]
+        BooguImagePipeline = 69,
 
 
         // Video
