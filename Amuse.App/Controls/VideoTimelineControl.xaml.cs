@@ -19,6 +19,7 @@ using TensorStack.Media.Video;
 using TensorStack.WPF;
 using TensorStack.WPF.Controls;
 using TensorStack.WPF.Services;
+using TensorStack.Common.Audio;
 
 namespace Amuse.App.Controls
 {
